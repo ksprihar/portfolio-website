@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ page_title }}</title>
+<meta name="description" content="{{ page_description }}">
+<script>
+(function(){
+  var stored = localStorage.getItem('theme');
+  var theme = stored === 'light' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="site-header" id="top">
+  <div class="nav-inner">
+    <a class="brand" href="{{ url_for('home') }}">Karanvir Prihar <span aria-hidden="true">◆</span> Portfolio</a>
+    <div class="nav-desktop">
+      <nav class="navlinks" aria-label="Primary">
+        <a href="{{ url_for('about') }}"{% if active_page == 'about' %} class="active"{% endif %}>About</a>
+        <a href="{{ url_for('projects') }}"{% if active_page == 'projects' %} class="active"{% endif %}>Projects</a>
+        <a href="{{ url_for('blog') }}"{% if active_page == 'blog' %} class="active"{% endif %}>Blog</a>
+        <a href="{{ url_for('home') }}#contact">Contact</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggleDesktop" type="button" aria-label="Toggle light mode">
+        <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><line x1="12" y1="2" x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"></line><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="4" y2="12"></line><line x1="20" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"></line><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"></line></svg>
+        <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <span class="toggle-tip"><span class="tip-light">Switch to<br>Light mode</span><span class="tip-dark">Switch to<br>Dark mode</span></span>
+      </button>
+    </div>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">Menu</button>
+  </div>
+  <nav class="mobile-nav" id="mobileNav" aria-label="Mobile">
+    <a href="{{ url_for('about') }}"{% if active_page == 'about' %} class="active"{% endif %}>About</a>
+    <a href="{{ url_for('projects') }}"{% if active_page == 'projects' %} class="active"{% endif %}>Projects</a>
+    <a href="{{ url_for('blog') }}"{% if active_page == 'blog' %} class="active"{% endif %}>Blog</a>
+    <a href="{{ url_for('home') }}#contact">Contact</a>
+    <button class="theme-toggle-mobile" id="themeToggleMobile" type="button">
+      <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><line x1="12" y1="2" x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"></line><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="4" y2="12"></line><line x1="20" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"></line><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"></line></svg>
+      <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <span>Toggle theme</span>
+    </button>
+  </nav>
+</header>
+
+<main>

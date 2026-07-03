@@ -1,0 +1,122 @@
+{% set page_title = "About — Karanvir Prihar" %}
+{% set page_description = "Karanvir Prihar — the long way into data: mechanical and aerospace engineering, automotive manufacturing, and energy auditing, now transitioning into data analytics." %}
+{% set active_page = "about" %}
+{% include "header.html" %}
+  <div class="wrap page-wrap">
+    <a class="back-link" href="{{ url_for('home') }}">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      Back to home
+    </a>
+
+    <div class="page-head">
+      <span class="eyebrow">About</span>
+      <h1>The long way into data</h1>
+    </div>
+
+    <div class="about-grid" style="margin-bottom:80px;">
+      <div class="about-copy">
+        <p>My path started with a mechanical engineering degree from IIT Ropar in India, followed by two years in automotive manufacturing at Tata Motors.</p>
+        <p>I then completed a master's in aerospace engineering at the University of Toronto. When engineering work in Canada didn't pan out the way I'd hoped, I spent time in different roles before becoming a certified Registered Energy Advisor — walking through hundreds of homes with a blower door, a thermal camera, and a clipboard full of measurements.</p>
+        <p>Every audit ended with a spreadsheet: air leakage rates, heat loss coefficients, estimated savings by upgrade path. I was doing data work long before I called it that.</p>
+        <p>Now I'm making that transition explicit — learning Python, SQL, and statistical analysis, and applying data thinking to the energy sector I already understand deeply.</p>
+        <p>My edge isn't just technical skill. It's knowing what the numbers mean before the model runs, and knowing which questions are worth asking in the first place.</p>
+      </div>
+      <div>
+        <span class="timeline-label">Career timeline</span>
+        <div class="timeline">
+          <div class="timeline-item">
+            <p class="timeline-year">01</p>
+            <p class="timeline-role">Mechanical Engineering</p>
+            <p class="timeline-org">B.Tech — IIT Ropar, India</p>
+            <p class="timeline-detail">Thermodynamics, manufacturing, fluid mechanics</p>
+          </div>
+          <div class="timeline-item">
+            <p class="timeline-year">02</p>
+            <p class="timeline-role">Automotive Manufacturing</p>
+            <p class="timeline-org">Tata Motors — 2 years</p>
+            <p class="timeline-detail">Production engineering at an automotive plant</p>
+          </div>
+          <div class="timeline-item">
+            <p class="timeline-year">03</p>
+            <p class="timeline-role">Aerospace Engineering</p>
+            <p class="timeline-org">M.Eng — University of Toronto</p>
+            <p class="timeline-detail">Graduate studies, Canada</p>
+          </div>
+          <div class="timeline-item">
+            <p class="timeline-year">04</p>
+            <p class="timeline-role">Registered Energy Advisor</p>
+            <p class="timeline-org">Field Auditor — Canada</p>
+            <p class="timeline-detail">NRCan EnerGuide home energy audits</p>
+          </div>
+          <div class="timeline-item">
+            <p class="timeline-year">05</p>
+            <p class="timeline-role">Data Analyst (in transition)</p>
+            <p class="timeline-org">Self-directed + projects</p>
+            <p class="timeline-detail">Python, SQL, energy analytics portfolio</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="padding:0 0 80px; border-top:1px solid var(--line); padding-top:64px;">
+      <span class="timeline-label">Skills &amp; tools</span>
+      <div class="skills-grid" style="margin-top:32px;">
+        <div class="skill-card">
+          <span class="skill-cat">Data &amp; Analytics</span>
+          <div class="tags">
+            <span class="tag">Python</span><span class="tag">Pandas</span><span class="tag">NumPy</span><span class="tag">SQL</span><span class="tag">Matplotlib</span><span class="tag">Seaborn</span>
+          </div>
+        </div>
+        <div class="skill-card">
+          <span class="skill-cat">Energy Domain</span>
+          <div class="tags">
+            <span class="tag">EnerGuide</span><span class="tag">NRCan Protocols</span><span class="tag">Energy Modelling</span><span class="tag">HVAC Systems</span><span class="tag">Building Science</span><span class="tag">Blower Door</span>
+          </div>
+        </div>
+        <div class="skill-card">
+          <span class="skill-cat">Tools &amp; Platforms</span>
+          <div class="tags">
+            <span class="tag">Git / GitHub</span><span class="tag">Jupyter</span><span class="tag">Power BI</span><span class="tag">Excel</span><span class="tag">VS Code</span><span class="tag">Linux CLI</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="padding:0 0 80px; border-top:1px solid var(--line); padding-top:64px;">
+      <span class="timeline-label">Currently</span>
+      <div class="now-grid">
+        <div class="now-card">
+          <span class="now-cat">Learning</span>
+          <ul class="now-list">
+            <li><span class="now-dot"></span>Machine learning fundamentals</li>
+            <li><span class="now-dot"></span>Statistical modelling in Python</li>
+            <li><span class="now-dot"></span>Data pipeline design</li>
+          </ul>
+        </div>
+        <div class="now-card">
+          <span class="now-cat">Building</span>
+          <ul class="now-list">
+            <li><span class="now-dot"></span>Energy audit analytics dashboard</li>
+            <li><span class="now-dot"></span>NRCan dataset CLI tool</li>
+            <li><span class="now-dot"></span>This portfolio</li>
+          </ul>
+        </div>
+        <div class="now-card">
+          <span class="now-cat">Reading</span>
+          <ul class="now-list">
+            <li><span class="now-dot"></span>Python for Data Analysis — Wes McKinney</li>
+            <li><span class="now-dot"></span>The Art of Statistics — David Spiegelhalter</li>
+            <li><span class="now-dot"></span>Building Science Corporation field guides</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="padding:64px 0 0; border-top:1px solid var(--line);">
+      <div class="cta-row">
+        <a class="btn primary" href="{{ url_for('projects') }}">View my projects</a>
+        <a class="btn ghost" href="{{ url_for('blog') }}">Read the blog</a>
+      </div>
+    </div>
+  </div>
+{% include "footer.html" %}
