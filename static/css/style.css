@@ -403,3 +403,49 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
   .nav-desktop{display:none;}
   .nav-toggle{display:flex;}
 }
+
+/* ---- Load-in animation ----
+   Since pages are server-rendered, this content is already in the HTML by
+   the time it reaches the browser — there's no client-side wait on the
+   GitHub data anymore (that's what get_projects_github_data's parallel
+   fetch fixed, server-side). This is purely a cosmetic entrance: nav fades
+   in, hero slides up, then cards/posts follow in staggered rows, all on a
+   short fixed timeline rather than being gated on anything actually
+   loading. */
+@keyframes reveal-up{
+  from{opacity:0; transform:translateY(18px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+.site-header{animation:reveal-up .5s ease both;}
+.hero-grid > *:first-child{animation:reveal-up .6s ease both .08s;}
+.hero-badges{animation:reveal-up .6s ease both .22s;}
+
+.project-card{animation:reveal-up .6s ease both;}
+.project-card:nth-child(1),.project-card:nth-child(2){animation-delay:.1s;}
+.project-card:nth-child(3),.project-card:nth-child(4){animation-delay:.22s;}
+.project-card:nth-child(5),.project-card:nth-child(6){animation-delay:.34s;}
+.project-card:nth-child(n+7){animation-delay:.46s;}
+
+.post-item{animation:reveal-up .6s ease both;}
+.post-item:nth-child(1){animation-delay:.1s;}
+.post-item:nth-child(2){animation-delay:.2s;}
+.post-item:nth-child(3){animation-delay:.3s;}
+.post-item:nth-child(n+4){animation-delay:.4s;}
+
+@media (prefers-reduced-motion: reduce){
+  .site-header, .hero-grid > *:first-child, .hero-badges, .project-card, .post-item{
+    animation:none;
+  }
+}
+
+/* ---- Contact form honeypot ----
+   Hidden from real visitors (and off the tab order / screen readers), but
+   present in the DOM so bots that blindly fill every input on a form will
+   fill this one too. Not display:none — some bots specifically skip
+   display:none fields, so this is hidden visually/positionally instead. */
+.hp-field{
+  position:absolute; left:-9999px; top:-9999px;
+  width:1px; height:1px; overflow:hidden;
+  opacity:0; pointer-events:none;
+}

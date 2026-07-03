@@ -1,6 +1,7 @@
 import os
 import time
 import requests
+from concurrent.futures import ThreadPoolExecutor
 import markdown as markdown_lib
 from markdown.extensions.toc import TocExtension
 import resend
@@ -171,10 +172,26 @@ def get_project_github_data(slug):
     return github_data
 
 
+def get_projects_github_data(slugs):
+    """Same data as get_project_github_data, but for a list of slugs, fetched
+    concurrently instead of one-after-another. Each project still needs its
+    own 2 GitHub requests (repo info + languages), so on a cold cache this
+    turns N sequential round-trips (~N x latency) into all of them happening
+    at once (~1x latency) — the fix for the slow first-load on the home and
+    /projects pages. Cache-hit slugs resolve instantly either way; the pool
+    only matters for the ones that actually need to hit the network."""
+    if not slugs:
+        return {}
+    with ThreadPoolExecutor(max_workers=len(slugs)) as executor:
+        results = executor.map(get_project_github_data, slugs)
+    return dict(zip(slugs, results))
+
+
 @app.route('/')
 def home():
     projects = db.session.execute(db.select(Project).limit(4)).scalars().all()
-    project_cards = [(p, get_project_github_data(p.slug)) for p in projects]
+    github_data = get_projects_github_data([p.slug for p in projects])
+    project_cards = [(p, github_data[p.slug]) for p in projects]
     posts = db.session.execute(db.select(BlogPost).limit(3)).scalars().all()
     return render_template('index.html', project_cards=project_cards, posts=posts)
 
@@ -187,7 +204,8 @@ def about():
 @app.route('/projects')
 def projects():
     all_projects = db.session.execute(db.select(Project)).scalars().all()
-    project_cards = [(p, get_project_github_data(p.slug)) for p in all_projects]
+    github_data = get_projects_github_data([p.slug for p in all_projects])
+    project_cards = [(p, github_data[p.slug]) for p in all_projects]
     return render_template('projects.html', project_cards=project_cards)
 
 
@@ -239,6 +257,22 @@ def send_contact_email(name, email, message):
         return False
 
 
+# In-memory per-IP rate limit for the contact form — same pattern as the
+# GitHub cache above (process-local dict, fine for a single-instance
+# personal site). Caps abuse from a single source without needing a DB
+# table or an external store.
+_CONTACT_RATE_LIMIT = 3      # max submissions...
+_CONTACT_RATE_WINDOW = 600   # ...per this many seconds, per IP
+_contact_submissions = {}
+
+
+def _is_rate_limited(ip):
+    now = time.time()
+    recent = [t for t in _contact_submissions.get(ip, []) if now - t < _CONTACT_RATE_WINDOW]
+    _contact_submissions[ip] = recent
+    return len(recent) >= _CONTACT_RATE_LIMIT
+
+
 @app.route('/contact', methods=['POST'])
 def contact():
     data = request.get_json(silent=True) or request.form
@@ -246,8 +280,20 @@ def contact():
     email = (data.get('email') or '').strip()
     message = (data.get('message') or '').strip()
 
+    # Honeypot — a hidden field real visitors never see or fill. Bots that
+    # blindly fill every input on the form will fill this one. Respond with
+    # a fake success (not an error) so the bot has no signal it was caught,
+    # and skip saving/emailing entirely.
+    if (data.get('company') or '').strip():
+        return jsonify({"success": True})
+
     if not name or not email or not message:
         return jsonify({"success": False, "error": "Please fill in all fields."}), 400
+
+    ip = (request.headers.get('X-Forwarded-For', request.remote_addr) or '').split(',')[0].strip()
+    if _is_rate_limited(ip):
+        return jsonify({"success": False, "error": "Too many messages sent recently. Please try again in a bit."}), 429
+    _contact_submissions.setdefault(ip, []).append(time.time())
 
     # Save first — the message is never lost even if the email send below fails.
     contact_msg = ContactMessage(name=name, email=email, message=message)

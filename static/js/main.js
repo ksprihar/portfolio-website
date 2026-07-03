@@ -86,6 +86,9 @@ if (contactForm && formNote) {
     const name = document.getElementById('name').value.trim();
     const email = document.getElementById('email').value.trim();
     const message = document.getElementById('message').value.trim();
+    // Honeypot — invisible to real visitors. If it's filled in, a bot did
+    // it; we still send the request so the server can quietly no-op it.
+    const company = document.getElementById('company').value.trim();
 
     if (!name || !email || !message) {
       formNote.textContent = 'Please fill in all fields.';
@@ -100,7 +103,7 @@ if (contactForm && formNote) {
       const res = await fetch('/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, message }),
+        body: JSON.stringify({ name, email, message, company }),
       });
       const data = await res.json();
 
