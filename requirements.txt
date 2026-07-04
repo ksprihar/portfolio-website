@@ -5,3 +5,4 @@ SQLAlchemy
 requests
 Markdown
 resend
+python-frontmatter

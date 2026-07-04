@@ -6,7 +6,7 @@ import markdown as markdown_lib
 from markdown.extensions.toc import TocExtension
 import resend
 
-from typing import List
+from typing import List, Dict
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 load_dotenv()
@@ -76,13 +76,20 @@ class Project(db.Model):
     __tablename__ = 'project_table'
     slug: Mapped[str] = mapped_column(String, primary_key=True)
     tagline: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    about: Mapped[str] = mapped_column(String, nullable=False)
     why: Mapped[str] = mapped_column(String, nullable=False)
     how: Mapped[str] = mapped_column(String, nullable=False)
     results: Mapped[str] = mapped_column(String, nullable=False)
-    code_lines: Mapped[str] = mapped_column(String, nullable=False)
     code: Mapped[str] = mapped_column(String, nullable=False)
     stack: Mapped[List[str]] = mapped_column(JSON, nullable=False)
-
+    url: Mapped[str] = mapped_column(String, nullable=False)
+    git_path: Mapped[str] = mapped_column(String, nullable=False)
+    live: Mapped[str] = mapped_column(String, nullable=False)
+    tags: Mapped[List[str]] = mapped_column(JSON, nullable=False)
+    languages: Mapped[Dict] = mapped_column(JSON, nullable=True)
+    primary_language: Mapped[str] = mapped_column(String, nullable=True)
+    stars: Mapped[int] = mapped_column(Integer, nullable=False)
+    forks: Mapped[int] = mapped_column(Integer, nullable=False)
 
 class BlogPost(db.Model):
     __tablename__ = 'blog_post_table'
@@ -93,7 +100,6 @@ class BlogPost(db.Model):
     excerpt: Mapped[str] = mapped_column(String, nullable=False)
     tags: Mapped[List[str]] = mapped_column(JSON, nullable=False)
     body: Mapped[str] = mapped_column(String, nullable=False)
-
 
 class ContactMessage(db.Model):
     __tablename__ = 'contact_message_table'
@@ -143,6 +149,7 @@ def get_project_github_data(slug):
     response = requests.get(url, headers=headers)
     if response.status_code != 200:
         data = {
+            'description': '',
             'html_url': '',
             'homepage': '',
             'topics': [],
@@ -159,6 +166,7 @@ def get_project_github_data(slug):
         lang_data = response.json()
 
     github_data = {
+        'about': data['description'],
         'url': data['html_url'],
         'git_path': data['html_url'].replace('https://', '').replace('http://', ''),
         'live': data['homepage'],
@@ -169,6 +177,7 @@ def get_project_github_data(slug):
         'forks': data['forks_count'],
     }
     _github_cache[slug] = (now, github_data)
+
     return github_data
 
 
@@ -184,7 +193,16 @@ def get_projects_github_data(slugs):
         return {}
     with ThreadPoolExecutor(max_workers=len(slugs)) as executor:
         results = executor.map(get_project_github_data, slugs)
-    return dict(zip(slugs, results))
+
+    results_dict = dict(zip(slugs, results))
+    for slug, values in results_dict.items():
+        existing = db.session.execute(db.select(Project).where(Project.slug == slug)).scalar()
+        if existing:
+            existing.forks = values['forks']
+            existing.stars = values['stars']
+        db.session.commit()
+
+    return results_dict
 
 
 @app.route('/')
@@ -215,7 +233,7 @@ def project_detail(slug):
     if project is None:
         abort(404)
 
-    project_dict = get_project_github_data(slug)
+    project_dict = get_projects_github_data([slug])[slug]
     project_dict['other'] = db.session.execute(db.select(Project).where(Project.slug != slug)).scalars().all()[:3]
 
     return render_template('project-detail.html', project=project, project_dict=project_dict)

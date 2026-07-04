@@ -3,6 +3,9 @@ Figma-1
 Figma-2
 prac.py
 
+# Raw project and blog data
+raw_data
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
