@@ -28,6 +28,51 @@ function toggleTheme() {
   if (btn) btn.addEventListener('click', toggleTheme);
 });
 
+// ---- First-visit hint pointing at the theme toggle ----
+// Shows the existing hover tooltip once, unprompted, shortly after page
+// load, so first-time visitors notice the toggle exists without having to
+// stumble onto it. Never shows again once seen (tracked in localStorage).
+(function () {
+  var HINT_SEEN_KEY = 'themeToggleHintSeen';
+  var tip = themeToggleDesktop ? themeToggleDesktop.querySelector('.toggle-tip') : null;
+  if (!tip) return;
+
+  var alreadySeen;
+  try {
+    alreadySeen = localStorage.getItem(HINT_SEEN_KEY);
+  } catch (e) {
+    alreadySeen = true; // no localStorage (private browsing, etc.) — skip the hint
+  }
+  if (alreadySeen) return;
+
+  var hideTimer;
+
+  function dismiss() {
+    // Fade out first, keeping the hint text/colors in place — only swap
+    // .toggle-tip back to its normal hover-driven content (tip-light/
+    // tip-dark) once the opacity transition has actually finished, so it
+    // never flashes "Switch to light mode" mid-fade.
+    tip.classList.add('hint-fading');
+    themeToggleDesktop.classList.remove('hint-flash');
+    clearTimeout(hideTimer);
+    try {
+      localStorage.setItem(HINT_SEEN_KEY, '1');
+    } catch (e) {
+      // can't persist — hint may show again next visit, which is fine.
+    }
+    setTimeout(function () {
+      tip.classList.remove('show-hint', 'hint-fading');
+    }, 250);
+  }
+
+  setTimeout(function () {
+    tip.classList.add('show-hint');
+    themeToggleDesktop.classList.add('hint-flash');
+    hideTimer = setTimeout(dismiss, 4000);
+    themeToggleDesktop.addEventListener('click', dismiss, { once: true });
+  }, 1200);
+})();
+
 // ---- Hide navbar on scroll down, show on scroll up ----
 const siteHeader = document.querySelector('.site-header');
 
@@ -78,6 +123,12 @@ if (navToggle && mobileNav) {
 // ---- Contact form ----
 const contactForm = document.getElementById('contactForm');
 const formNote = document.getElementById('formNote');
+// Basic structural check (something@something.tld) — the form has
+// novalidate set (so the "please fill this field" bubbles stay off), which
+// also disables the browser's own type="email" format check, so this
+// replaces it. Mirrored server-side in main.py's EMAIL_RE, since this check
+// can be bypassed by anyone calling /contact directly.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 if (contactForm && formNote) {
   contactForm.addEventListener('submit', async (e) => {
@@ -92,6 +143,12 @@ if (contactForm && formNote) {
 
     if (!name || !email || !message) {
       formNote.textContent = 'Please fill in all fields.';
+      formNote.classList.add('show');
+      return;
+    }
+
+    if (!EMAIL_RE.test(email)) {
+      formNote.textContent = 'Please enter a valid email address.';
       formNote.classList.add('show');
       return;
     }

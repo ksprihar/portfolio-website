@@ -1,4 +1,6 @@
 import os
+import random
+import re
 import time
 import requests
 from concurrent.futures import ThreadPoolExecutor
@@ -29,6 +31,14 @@ RESEND_API_KEY = os.getenv('RESEND_API_KEY')
 # "contact@ksprihar.com") and it'll switch over with no code changes.
 CONTACT_FROM_EMAIL = os.getenv('CONTACT_FROM_EMAIL', 'onboarding@resend.dev')
 CONTACT_TO_EMAIL = os.getenv('CONTACT_TO_EMAIL')
+
+# Basic structural check (something@something.tld) — not full RFC 5322, just
+# enough to reject obvious typos/junk. Mirrors the check in main.js; this
+# server-side copy exists because the client-side one can be bypassed (the
+# contact <form> uses novalidate, so the browser's own type="email" check no
+# longer runs either).
+EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+
 
 class Base(DeclarativeBase):
     pass
@@ -209,11 +219,9 @@ def get_projects_github_data(slugs):
 
 @app.route('/')
 def home():
-    projects = db.session.execute(db.select(Project).limit(4)).scalars().all()
-    github_data = get_projects_github_data([p.slug for p in projects])
-    project_cards = [(p, github_data[p.slug]) for p in projects]
-    posts = db.session.execute(db.select(BlogPost).limit(3)).scalars().all()
-    return render_template('index.html', project_cards=project_cards, posts=posts)
+    projects = db.session.execute(db.select(Project).order_by(Project.order_index).limit(4)).scalars().all()
+    posts = db.session.execute(db.select(BlogPost).order_by(BlogPost.order_index).limit(3)).scalars().all()
+    return render_template('index.html', projects=projects, posts=posts)
 
 
 @app.route('/about')
@@ -224,21 +232,25 @@ def about():
 @app.route('/projects')
 def projects():
     all_projects = db.session.execute(db.select(Project)).scalars().all()
-    github_data = get_projects_github_data([p.slug for p in all_projects])
-    project_cards = [(p, github_data[p.slug]) for p in all_projects]
-    return render_template('projects.html', project_cards=project_cards)
+    return render_template('projects.html', projects=all_projects)
 
 
 @app.route('/projects/<slug>')
 def project_detail(slug):
+    all_projects = db.session.execute(db.select(Project)).scalars().all()
     project = db.session.execute(db.select(Project).where(Project.slug == slug)).scalar()
     if project is None:
         abort(404)
 
-    project_dict = get_projects_github_data([slug])[slug]
-    project_dict['other'] = db.session.execute(db.select(Project).where(Project.slug != slug)).scalars().all()[:3]
+    indexes = [0 if project.order_index != 0 else 1]
+    while len(indexes) < min(3, len(all_projects) - 1):
+        new_index = random.randint(0, len(all_projects) - 1)
+        if new_index not in indexes and new_index != project.order_index:
+            indexes.append(new_index)
 
-    return render_template('project-detail.html', project=project, project_dict=project_dict)
+    other_projects = [project for project in all_projects if project.order_index in indexes]
+
+    return render_template('project-detail.html', project=project, other_projects=other_projects)
 
 
 @app.route('/blog')
@@ -252,7 +264,11 @@ def blog_post(slug):
     post = db.session.execute(db.select(BlogPost).where(BlogPost.slug == slug)).scalar()
     if post is None:
         abort(404)
-    return render_template('blog-post.html', post=post)
+
+    prev_post = db.session.execute(db.select(BlogPost).where(BlogPost.order_index == post.order_index - 1)).scalar()
+    next_post = db.session.execute(db.select(BlogPost).where(BlogPost.order_index == post.order_index + 1)).scalar()
+
+    return render_template('blog-post.html', post=post, prev_post=prev_post, next_post=next_post)
 
 
 def send_contact_email(name, email, message):
@@ -309,6 +325,9 @@ def contact():
 
     if not name or not email or not message:
         return jsonify({"success": False, "error": "Please fill in all fields."}), 400
+
+    if not EMAIL_RE.match(email):
+        return jsonify({"success": False, "error": "Please enter a valid email address."}), 400
 
     ip = (request.headers.get('X-Forwarded-For', request.remote_addr) or '').split(',')[0].strip()
     if _is_rate_limited(ip):

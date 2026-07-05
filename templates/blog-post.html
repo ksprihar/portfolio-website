@@ -43,9 +43,19 @@
       </aside>
     </div>
 
-    <div class="more-posts">
-      <p>More posts coming</p>
-      <p>Writing regularly as I work through projects. Check back or follow on GitHub.</p>
+    <div class="post-nav">
+      {% if prev_post %}
+      <a class="post-nav-link post-nav-prev" href="{{ url_for('blog_post', slug=prev_post.slug) }}">
+        <span class="post-nav-label">← Previous</span>
+        <span class="post-nav-title">{{ prev_post.title }}</span>
+      </a>
+      {% else %}<div></div>{% endif %}
+      {% if next_post %}
+      <a class="post-nav-link post-nav-next" href="{{ url_for('blog_post', slug=next_post.slug) }}">
+        <span class="post-nav-label">Next →</span>
+        <span class="post-nav-title">{{ next_post.title }}</span>
+      </a>
+      {% else %}<div></div>{% endif %}
     </div>
   </div>
 {% include "footer.html" %}

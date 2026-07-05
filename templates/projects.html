@@ -15,7 +15,7 @@
     </div>
 
     <div class="project-grid">
-      {% for project, github in project_cards %}
+      {% for project in projects %}
       <a class="project-card" href="{{ url_for('project_detail', slug=project.slug) }}">
         <div class="project-card-head">
           <div class="project-card-name">
@@ -24,14 +24,15 @@
           </div>
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </div>
+        <p class="project-desc">{{ project.about }}</p>
         <p class="project-tagline">{{ project.tagline }}</p>
-        <div class="tags">{% for tag in github.tags %}<span class="tag">{{ tag }}</span>{% endfor %}</div>
+        <div class="tags">{% for tag in project.tags[:4] %}<span class="tag">{{ tag }}</span>{% endfor %}</div>
         <div class="project-meta">
-          {% if github.primary_language %}
-          <span><span class="lang-dot" style="background:{{ github.languages[github.primary_language] }}"></span>{{ github.primary_language }}</span>
+          {% if project.primary_language %}
+          <span><span class="lang-dot" style="background:{{ project.languages[project.primary_language] }}"></span>{{ project.primary_language }}</span>
           {% endif %}
-          <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> {{ github.stars }}</span>
-          <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.2"></circle><circle cx="18" cy="6" r="2.2"></circle><circle cx="12" cy="18" r="2.2"></circle><path d="M6 8.2V11a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V8.2"></path><line x1="12" y1="14" x2="12" y2="15.8"></line></svg> {{ github.forks }}</span>
+          <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> {{ project.stars }}</span>
+          <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.2"></circle><circle cx="18" cy="6" r="2.2"></circle><circle cx="12" cy="18" r="2.2"></circle><path d="M6 8.2V11a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V8.2"></path><line x1="12" y1="14" x2="12" y2="15.8"></line></svg> {{ project.forks }}</span>
           <span class="read-report">Read report →</span>
         </div>
       </a>

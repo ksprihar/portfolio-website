@@ -12,28 +12,28 @@
       <div class="detail-header-info">
         <div class="detail-repo-path">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 22v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 19 4.77 5.07 5.07 0 0 0 18.91.65S17.73.35 15 2.19a13.38 13.38 0 0 0-7 0C5.27.35 4.09.65 4.09.65A5.07 5.07 0 0 0 4 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 8 18.13V22"></path><path d="M9 20c-3 1-4-1-5-2"></path></svg>
-          {{ project_dict.git_path }}
+          {{ project.git_path }}
         </div>
         <h1>{{ project.slug }}</h1>
         <p class="detail-tagline">{{ project.tagline }}</p>
         <div class="tags" style="margin-bottom:20px;">
-          {% for tag in project_dict.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
+          {% for tag in project.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
         </div>
         <div class="detail-stats">
-          {% for lang, color in project_dict.languages.items() %}
+          {% for lang, color in project.languages.items() %}
             <span><span class="lang-dot" style="background:{{ color }}"></span>{{ lang }}</span>
           {% endfor %}
-          <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> {{ project_dict.stars }}</span>
-          <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.2"></circle><circle cx="18" cy="6" r="2.2"></circle><circle cx="12" cy="18" r="2.2"></circle><path d="M6 8.2V11a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V8.2"></path><line x1="12" y1="14" x2="12" y2="15.8"></line></svg> {{ project_dict.forks }}</span>
+          <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> {{ project.stars }}</span>
+          <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.2"></circle><circle cx="18" cy="6" r="2.2"></circle><circle cx="12" cy="18" r="2.2"></circle><path d="M6 8.2V11a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V8.2"></path><line x1="12" y1="14" x2="12" y2="15.8"></line></svg> {{ project.forks }}</span>
         </div>
       </div>
       <div class="detail-actions">
-        <a class="btn primary" href="{{ project_dict.url }}" target="_blank" rel="noreferrer">
+        <a class="btn primary" href="{{ project.url }}" target="_blank" rel="noreferrer">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 22v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 19 4.77 5.07 5.07 0 0 0 18.91.65S17.73.35 15 2.19a13.38 13.38 0 0 0-7 0C5.27.35 4.09.65 4.09.65A5.07 5.07 0 0 0 4 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 8 18.13V22"></path><path d="M9 20c-3 1-4-1-5-2"></path></svg>
           View on GitHub
         </a>
-        {% if project_dict.live %}
-        <a class="btn ghost" href="{{ project_dict.live }}" target="_blank" rel="noreferrer">
+        {% if project.live %}
+        <a class="btn ghost" href="{{ project.live }}" target="_blank" rel="noreferrer">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
           Live demo
         </a>
@@ -67,8 +67,7 @@
         <section class="report-section">
           <span class="eyebrow">04 — Code</span>
           <h2>Code highlight</h2>
-          <p class="code-label">{{ project.code_lines }}</p>
-          <div class="code-block"><pre>{{ project.code }}</pre></div>
+          <div class="code-content">{{ project.code | markdown }}</div>
         </section>
 
       </div>
@@ -83,17 +82,17 @@
           <div class="glance-row glance-row-langs">
             <span>Languages</span>
             <div class="glance-langs">
-              {% for lang in project_dict.languages.keys() %}
+              {% for lang in project.languages.keys() %}
               <span>{{ lang }}</span>
               {% endfor %}
             </div>
           </div>
-          <div class="glance-row"><span>Stars</span><span>{{ project_dict.stars }}</span></div>
-          <div class="glance-row"><span>Forks</span><span>{{ project_dict.forks }}</span></div>
+          <div class="glance-row"><span>Stars</span><span>{{ project.stars }}</span></div>
+          <div class="glance-row"><span>Forks</span><span>{{ project.forks }}</span></div>
         </div>
         <div class="other-projects">
           <span class="sidebar-label">Other projects</span>
-          {% for other in project_dict.other %}
+          {% for other in other_projects %}
           <a href="{{ url_for('project_detail', slug=other.slug) }}">→ {{ other.slug }}</a>
           {% endfor %}
         </div>

@@ -91,16 +91,51 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 [data-theme="light"] .theme-toggle .icon-moon{display:block;}
 
 .toggle-tip{
-  position:absolute; top:100%; left:50%; transform:translateX(-50%); margin-top:8px;
+  position:absolute; top:100%; left:50%; margin-top:8px;
+  transform:translateX(-50%) translateY(-6px);
   padding:6px 10px; white-space:nowrap; text-align:center; line-height:1.4;
   background:var(--card); border:1px solid var(--line); color:var(--sub);
   font-family:var(--mono); font-size:12px; border-radius:var(--radius);
-  opacity:0; pointer-events:none; transition:opacity .15s ease;
+  opacity:0; pointer-events:none;
+  transition:opacity .2s ease, transform .25s ease, background-color .2s ease, border-color .2s ease, color .2s ease;
 }
-.theme-toggle:hover .toggle-tip{opacity:1;}
+.theme-toggle:hover .toggle-tip, .toggle-tip.show-hint{
+  opacity:1; transform:translateX(-50%) translateY(0);
+}
 .toggle-tip .tip-dark{display:none;}
 [data-theme="light"] .toggle-tip .tip-light{display:none;}
 [data-theme="light"] .toggle-tip .tip-dark{display:inline;}
+
+/* First-visit hint: swaps in its own copy (instead of the hover tip-light/
+   tip-dark text) and gets a "flashier" attention treatment on the button —
+   see theme-toggle-flash below. The tooltip itself stays put in static
+   dark-mode colors the whole time it's shown (no flashing), with a fixed
+   width so the message wraps onto a few lines instead of one word per
+   line (shrink-to-fit width on an unsized absolutely-positioned box). */
+.toggle-tip .tip-hint{display:none; white-space:normal;}
+.toggle-tip.show-hint .tip-light, .toggle-tip.show-hint .tip-dark{display:none;}
+.toggle-tip.show-hint .tip-hint{display:block;}
+.toggle-tip.show-hint{
+  width:130px;
+  background:#131614; border-color:rgba(229,223,213,.35); color:#e5dfd5;
+}
+/* Dismiss fades the tooltip out before main.js removes show-hint (see the
+   comment there) — this just overrides opacity/transform back to hidden
+   while show-hint (and so the hint text/colors) is still applied, so the
+   fade never reveals the hover tip-light/tip-dark text underneath. */
+.toggle-tip.show-hint.hint-fading{
+  opacity:0; transform:translateX(-50%) translateY(-6px);
+}
+
+@keyframes theme-toggle-flash{
+  0%, 33%, 66%, 100%{background:transparent; border-color:var(--line); color:var(--sub);}
+  16%, 50%, 83%{background:#faf7f2; border-color:rgba(26,28,27,.35); color:#1a1c1b;}
+}
+/* The icon itself is untouched by this animation (no data-theme change
+   happens) — .icon-sun/.icon-moon visibility is controlled purely by
+   [data-theme], so it stays on whichever icon is already showing (the sun,
+   for the default dark theme almost all first-time visitors land on). */
+.theme-toggle.hint-flash{animation:theme-toggle-flash 1.8s ease-in-out 1;}
 
 .nav-toggle{
   display:none;
@@ -145,7 +180,7 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 .view-all:hover{color:var(--accent);}
 
 /* ---- Hero ---- */
-.hero{padding:128px 0 80px; border-top:none;}
+.hero{padding:72px 0 80px; border-top:none;}
 .hero-grid{display:grid; grid-template-columns:1fr; gap:64px; align-items:center;}
 .hero h1{font-size:44px; line-height:1.08; margin-bottom:24px;}
 .hero h1 em{font-style:italic; color:var(--accent);}
@@ -224,7 +259,7 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 .project-card:hover .project-card-name h3, .project-card:hover .project-card-name h2{color:var(--accent);}
 .project-card-head > .icon{color:var(--sub); margin-top:2px;}
 .project-desc{color:var(--sub); font-size:14px; line-height:1.7;}
-.project-tagline{font-size:12px; color:var(--accent); font-style:italic;}
+.project-tagline{font-size:12px; color:var(--accent); font-style:normal;}
 .project-meta{display:flex; align-items:center; gap:20px; padding-top:12px; border-top:1px solid var(--line); flex-wrap:wrap;}
 .project-meta span{display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:12px; color:var(--sub);}
 .lang-dot{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
@@ -292,7 +327,7 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 .back-link{
   display:inline-flex; align-items:center; gap:8px;
   font-family:var(--mono); font-size:12px; color:var(--sub);
-  margin-bottom:40px; padding-top:112px;
+  margin-bottom:40px; padding-top:56px;
 }
 .back-link:hover{color:var(--accent);}
 .page-head{margin-bottom:56px;}
@@ -318,7 +353,6 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 .report-section h2{font-size:22px; margin-bottom:18px;}
 .report-section p{color:var(--sub); line-height:1.75; margin-bottom:16px;}
 .report-section p:last-child{margin-bottom:0;}
-.report-section .code-label{margin-top:4px; margin-bottom:10px;}
 .results-content{display:flex; flex-direction:column; gap:12px;}
 /* Older, results_block()-generated markup (raw <div class="result-item"> rows) —
    kept until every project is migrated to a .md file (see raw_data/ migration). */
@@ -347,14 +381,18 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
   overflow:hidden;
 }
 @media (max-width:600px){ .chart-embed{height:220px;} }
-.code-label{font-family:var(--mono); font-size:12px; color:var(--sub); margin-bottom:10px;}
-.code-block{
+/* Project.code is now rendered as one Markdown block (label paragraph +
+   fenced code), so the label/box styling that used to target .code-label/
+   .code-block targets the markdown filter's own <p>/<pre><code> output
+   instead. */
+.code-content p{font-family:var(--mono); font-size:12px; color:var(--sub); margin-bottom:10px;}
+.code-content pre{
   background:var(--secondary); border:1px solid var(--line); border-radius:var(--radius);
   padding:20px; overflow-x:auto;
 }
-.code-block pre{font-family:var(--mono); font-size:12px; line-height:1.7; color:var(--ink); white-space:pre;}
+.code-content pre code{font-family:var(--mono); font-size:12px; line-height:1.7; color:var(--ink); white-space:pre;}
 
-.markdown-body h2{font-size:22px; margin:56px 0 18px;}
+.markdown-body h2{font-size:22px; margin:56px 0 18px; scroll-margin-top:calc(var(--header-h) + 20px);}
 .markdown-body h2:first-child{margin-top:0;}
 .markdown-body p{color:var(--sub); line-height:1.75; margin-bottom:16px;}
 .markdown-body ul,.markdown-body ol{color:var(--sub); line-height:1.75; margin:0 0 16px; padding-left:22px;}
@@ -394,6 +432,23 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 .toc-list a:hover{color:var(--accent);}
 .toc-num{color:var(--accent); flex-shrink:0;}
 
+.post-nav{
+  margin-top:80px; padding-top:40px; border-top:1px solid var(--line);
+  display:grid; grid-template-columns:1fr; gap:16px;
+}
+.post-nav-link{
+  display:block; border:1px solid var(--line); background:var(--card);
+  padding:20px; transition:border-color .2s ease;
+}
+.post-nav-link:hover{border-color:color-mix(in srgb, var(--accent) 30%, var(--line));}
+.post-nav-label{display:block; font-family:var(--mono); font-size:12px; color:var(--sub); margin-bottom:8px;}
+.post-nav-title{
+  display:block; font-family:var(--serif); font-size:14px; color:var(--ink); line-height:1.4;
+  transition:color .2s ease;
+}
+.post-nav-link:hover .post-nav-title{color:var(--accent);}
+.post-nav-next{text-align:right;}
+
 /* ---- Responsive ---- */
 @media (min-width: 780px){
   .nav-desktop{display:flex;}
@@ -414,6 +469,7 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
   .detail-sidebar{position:sticky; top:80px;}
   .post-item{flex-direction:row; align-items:flex-start; gap:32px;}
   .post-index{flex-shrink:0; width:24px;}
+  .post-nav{grid-template-columns:1fr 1fr;}
 }
 
 @media (max-width: 779px){
