@@ -102,9 +102,13 @@ def _load_folder(folder: Path, order: list[str], loader) -> list[dict]:
     ordered = [by_slug[slug] for slug in order if slug in by_slug]
     leftover = [entry for slug, entry in by_slug.items() if slug not in order]
     if leftover:
-        print(f"There are some slugs that have not been ordered yet -- {[entry['slug'] for entry in leftover]}\n"
+        raise ValueError(f"There are some slugs that have not been ordered yet -- {[entry['slug'] for entry in leftover]}\n"
               f"Please insert these slugs in the {'PROJECT_ORDER' if folder.name == 'projects' else 'BLOG_ORDER'} list.")
-    return ordered + leftover
+
+    for entry in ordered:
+        entry['order_index'] = order.index(entry['slug'])
+
+    return ordered
 
 
 def seed():
@@ -132,7 +136,7 @@ def seed():
             for key in key_to_add:
                 entry[key] = git_call_entry[key]
 
-            existing = db.session.execute(db.select(Project).where(Project.slug == entry["slug"])).scalar()
+            existing = db.session.get(Project, entry['slug'])
             if existing:
                 for key, value in entry.items():
                     setattr(existing, key, value)
@@ -142,7 +146,7 @@ def seed():
                 print(f"Inserted project: {entry['slug']}")
 
         for entry in blog_seed:
-            existing = db.session.execute(db.select(BlogPost).where(BlogPost.slug == entry["slug"])).scalar()
+            existing = db.session.get(BlogPost, entry['slug'])
             if existing:
                 for key, value in entry.items():
                     setattr(existing, key, value)

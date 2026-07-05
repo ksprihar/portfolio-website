@@ -74,8 +74,8 @@ def markdown_toc(text):
 
 class Project(db.Model):
     __tablename__ = 'project_table'
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    slug: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    order_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    slug: Mapped[str] = mapped_column(String, primary_key=True)
     tagline: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     about: Mapped[str] = mapped_column(String, nullable=False)
     why: Mapped[str] = mapped_column(String, nullable=False)
@@ -94,8 +94,8 @@ class Project(db.Model):
 
 class BlogPost(db.Model):
     __tablename__ = 'blog_post_table'
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    slug: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    order_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    slug: Mapped[str] = mapped_column(String, primary_key=True)
     title: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     date_display: Mapped[str] = mapped_column(String, nullable=False)
     read_time: Mapped[str] = mapped_column(String, nullable=False)
