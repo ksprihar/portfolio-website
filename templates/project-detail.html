@@ -23,8 +23,8 @@
           {% for lang, color in project.languages.items() %}
             <span><span class="lang-dot" style="background:{{ color }}"></span>{{ lang }}</span>
           {% endfor %}
-          <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> {{ project.stars }}</span>
-          <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.2"></circle><circle cx="18" cy="6" r="2.2"></circle><circle cx="12" cy="18" r="2.2"></circle><path d="M6 8.2V11a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V8.2"></path><line x1="12" y1="14" x2="12" y2="15.8"></line></svg> {{ project.forks }}</span>
+          <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> <span class="stat-num" data-slug="{{ project.slug }}" data-stat="stars">{{ project.stars }}</span></span>
+          <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.2"></circle><circle cx="18" cy="6" r="2.2"></circle><circle cx="12" cy="18" r="2.2"></circle><path d="M6 8.2V11a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V8.2"></path><line x1="12" y1="14" x2="12" y2="15.8"></line></svg> <span class="stat-num" data-slug="{{ project.slug }}" data-stat="forks">{{ project.forks }}</span></span>
         </div>
       </div>
       <div class="detail-actions">
@@ -87,8 +87,8 @@
               {% endfor %}
             </div>
           </div>
-          <div class="glance-row"><span>Stars</span><span>{{ project.stars }}</span></div>
-          <div class="glance-row"><span>Forks</span><span>{{ project.forks }}</span></div>
+          <div class="glance-row"><span>Stars</span><span class="stat-num" data-slug="{{ project.slug }}" data-stat="stars">{{ project.stars }}</span></div>
+          <div class="glance-row"><span>Forks</span><span class="stat-num" data-slug="{{ project.slug }}" data-stat="forks">{{ project.forks }}</span></div>
         </div>
         <div class="other-projects">
           <span class="sidebar-label">Other projects</span>

@@ -1,0 +1,19 @@
+{% set page_title = "404 — Page not found" %}
+{% set page_description = "This page doesn't exist." %}
+{% include "header.html" %}
+
+  <section class="section page-wrap not-found">
+    <div class="wrap">
+      <span class="eyebrow">404 — Not found</span>
+      <h1>This page doesn't exist.</h1>
+      <p class="lead">The link may be outdated, or the page may have moved. Nothing was audited here — there's simply no data.</p>
+      <div class="cta-row">
+        <a class="btn primary" href="{{ url_for('home') }}">Back home
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </a>
+        <a class="btn ghost" href="{{ url_for('projects') }}">View projects</a>
+      </div>
+    </div>
+  </section>
+
+{% include "footer.html" %}

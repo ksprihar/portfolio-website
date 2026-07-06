@@ -1,7 +1,14 @@
 # Specific files and folders to be excluded. Local scratch / experimental work
-Figma-1
+Figma
 Figma-2
 prac.py
+static/assets/pot
+
+# Claude specific things
+CLAUDE.md
+.claudeignore
+ideas_ledger.md
+chat.md
 
 # Raw project and blog data
 raw_data

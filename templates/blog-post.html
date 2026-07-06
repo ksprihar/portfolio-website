@@ -23,14 +23,14 @@
     <div class="report-grid">
       <article class="report-body">
         <div class="markdown-body">
-          {{ post.body | markdown }}
+          {{ body_html }}
         </div>
       </article>
 
       <aside class="detail-sidebar">
         <span class="sidebar-label">In this post</span>
         <ul class="toc-list">
-          {% for heading in markdown_toc(post.body) %}
+          {% for heading in toc %}
           <li><span class="toc-num">{{ "%02d"|format(loop.index) }}</span><a href="#{{ heading.id }}">{{ heading.name }}</a></li>
           {% endfor %}
         </ul>

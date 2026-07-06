@@ -4,20 +4,24 @@ import re
 import time
 import requests
 from concurrent.futures import ThreadPoolExecutor
+from functools import wraps
+import pyotp
 import markdown as markdown_lib
 from markdown.extensions.toc import TocExtension
 import resend
 
 from typing import List, Dict
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 load_dotenv()
 
-from flask import Flask, render_template, abort, request, jsonify
+from flask import Flask, render_template, abort, request, jsonify, redirect, url_for, session
 from markupsafe import Markup
+from werkzeug.security import check_password_hash
 
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Integer, String, JSON, DateTime
+from sqlalchemy import Integer, String, JSON, DateTime, or_
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from lang_colors import get_lang_color
@@ -31,6 +35,12 @@ RESEND_API_KEY = os.getenv('RESEND_API_KEY')
 # "contact@ksprihar.com") and it'll switch over with no code changes.
 CONTACT_FROM_EMAIL = os.getenv('CONTACT_FROM_EMAIL', 'onboarding@resend.dev')
 CONTACT_TO_EMAIL = os.getenv('CONTACT_TO_EMAIL')
+
+# Admin auth — a werkzeug password hash + a TOTP secret for Microsoft/Google
+# Authenticator. Both the password and a valid 6-digit code are required to
+# log in. See setup notes for how to generate these two .env values.
+ADMIN_PASSWORD_HASH = os.getenv('ADMIN_PASSWORD_HASH')
+ADMIN_TOTP_SECRET = os.getenv('ADMIN_TOTP_SECRET')
 
 # Basic structural check (something@something.tld) — not full RFC 5322, just
 # enough to reject obvious typos/junk. Mirrors the check in main.js; this
@@ -46,7 +56,7 @@ class Base(DeclarativeBase):
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///posts.db")
-# app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
+app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
 
 db = SQLAlchemy(app, model_class=Base)
 
@@ -69,17 +79,6 @@ def render_markdown(text):
     if not text:
         return ""
     return Markup(_markdown_converter().convert(text))
-
-
-@app.template_global()
-def markdown_toc(text):
-    """Returns the heading outline (level/id/name) for a Markdown field, used
-    to build the blog post's 'In this post' sidebar nav as real anchor links."""
-    if not text:
-        return []
-    converter = _markdown_converter()
-    converter.convert(text)
-    return converter.toc_tokens
 
 
 class Project(db.Model):
@@ -119,14 +118,25 @@ class ContactMessage(db.Model):
     name: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[str] = mapped_column(String, nullable=False)
     message: Mapped[str] = mapped_column(String, nullable=False)
+    # Stored as Toronto local wall-clock time (naive, tzinfo stripped before
+    # save — SQLite has no real timezone-aware column type, so this mirrors
+    # the previous UTC convention but with America/Toronto clock values
+    # instead). Handles EST/EDT automatically via zoneinfo.
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
+        DateTime, nullable=False,
+        default=lambda: datetime.now(ZoneInfo("America/Toronto")).replace(tzinfo=None)
     )
     # Every submission lands here regardless of whether the notification
     # email succeeds, so nothing sent through the form is ever silently
     # lost — this flag just tells you whether you should also expect an
     # email for a given row, or need to check the table directly.
     email_sent: Mapped[bool] = mapped_column(nullable=False, default=False)
+    # Triage state for the admin inbox — 'new' until you've acted on it.
+    status: Mapped[str] = mapped_column(String, nullable=False, default='new')
+    # Free-text internal note, never shown to the sender — for your own
+    # triage/context, e.g. "already handled this one over LinkedIn".
+    comment: Mapped[str] = mapped_column(String, nullable=True)
+    starred: Mapped[bool] = mapped_column(nullable=False, default=False)
 
 
 with app.app_context():
@@ -158,8 +168,14 @@ def get_project_github_data(slug):
         "Accept": "application/vnd.github.v3+json",
         "Authorization": f"Bearer {GIT_TOKEN}",
     }
-    response = requests.get(url, headers=headers)
-    if response.status_code != 200:
+    # timeout so a hung GitHub call can't block a request worker forever —
+    # on timeout requests raises, which we treat the same as a bad status.
+    try:
+        response = requests.get(url, headers=headers, timeout=5)
+        status = response.status_code
+    except requests.RequestException:
+        status = None
+    if status != 200:
         data = {
             'description': '',
             'html_url': '',
@@ -171,11 +187,11 @@ def get_project_github_data(slug):
     else:
         data = response.json()
 
-    response = requests.get(f"{url}/languages", headers=headers)
-    if response.status_code != 200:
+    try:
+        response = requests.get(f"{url}/languages", headers=headers, timeout=5)
+        lang_data = response.json() if response.status_code == 200 else {}
+    except requests.RequestException:
         lang_data = {}
-    else:
-        lang_data = response.json()
 
     github_data = {
         'about': data['description'],
@@ -212,9 +228,18 @@ def get_projects_github_data(slugs):
         if existing:
             existing.forks = values['forks']
             existing.stars = values['stars']
-        db.session.commit()
+    # One commit for the whole batch — committing inside the loop meant one
+    # transaction per slug for what is logically a single update.
+    db.session.commit()
 
     return results_dict
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    """Custom 404 in the site's own style — covers both unknown URLs and
+    abort(404) from the detail routes (bad project/blog slug)."""
+    return render_template('404.html'), 404
 
 
 @app.route('/')
@@ -231,13 +256,13 @@ def about():
 
 @app.route('/projects')
 def projects():
-    all_projects = db.session.execute(db.select(Project)).scalars().all()
+    all_projects = db.session.execute(db.select(Project).order_by(Project.order_index)).scalars().all()
     return render_template('projects.html', projects=all_projects)
 
 
 @app.route('/projects/<slug>')
 def project_detail(slug):
-    all_projects = db.session.execute(db.select(Project)).scalars().all()
+    all_projects = db.session.execute(db.select(Project).order_by(Project.order_index)).scalars().all()
     project = db.session.execute(db.select(Project).where(Project.slug == slug)).scalar()
     if project is None:
         abort(404)
@@ -253,9 +278,34 @@ def project_detail(slug):
     return render_template('project-detail.html', project=project, other_projects=other_projects)
 
 
+@app.route('/api/project-stats')
+def project_stats():
+    """Background-refresh endpoint for stars/forks — pages render these
+    fields straight from the DB (fast, no live API call on page load), then
+    main.js calls this shortly after load to quietly check GitHub for
+    anything newer and animate the number in place if it changed. Only
+    accepts slugs that already exist in the DB, so this can't be used to
+    make the server hit GitHub for arbitrary/junk repo names."""
+    requested_slugs = [s for s in request.args.get('slugs', '').split(',') if s]
+    if not requested_slugs:
+        return jsonify({})
+
+    known_slugs = {
+        row[0] for row in db.session.execute(
+            db.select(Project.slug).where(Project.slug.in_(requested_slugs))
+        ).all()
+    }
+    slugs = [s for s in requested_slugs if s in known_slugs]
+    if not slugs:
+        return jsonify({})
+
+    data = get_projects_github_data(slugs)
+    return jsonify({slug: {'stars': values['stars'], 'forks': values['forks']} for slug, values in data.items()})
+
+
 @app.route('/blog')
 def blog():
-    posts = db.session.execute(db.select(BlogPost)).scalars().all()
+    posts = db.session.execute(db.select(BlogPost).order_by(BlogPost.order_index)).scalars().all()
     return render_template('blog.html', posts=posts)
 
 
@@ -268,7 +318,14 @@ def blog_post(slug):
     prev_post = db.session.execute(db.select(BlogPost).where(BlogPost.order_index == post.order_index - 1)).scalar()
     next_post = db.session.execute(db.select(BlogPost).where(BlogPost.order_index == post.order_index + 1)).scalar()
 
-    return render_template('blog-post.html', post=post, prev_post=prev_post, next_post=next_post)
+    # Convert the body once and reuse the same converter's toc_tokens for
+    # the sidebar — previously the template ran `post.body | markdown` AND
+    # markdown_toc(post.body), converting the whole post twice per request.
+    converter = _markdown_converter()
+    body_html = Markup(converter.convert(post.body))
+
+    return render_template('blog-post.html', post=post, body_html=body_html,
+                           toc=converter.toc_tokens, prev_post=prev_post, next_post=next_post)
 
 
 def send_contact_email(name, email, message):
@@ -276,7 +333,7 @@ def send_contact_email(name, email, message):
     True/False — never raises, so a Resend outage or bad API key can't take
     down the /contact route or lose a message that's already been saved to
     the DB."""
-    if not RESEND_API_KEY or not CONTACT_FROM_EMAIL:
+    if not RESEND_API_KEY or not CONTACT_FROM_EMAIL or not CONTACT_TO_EMAIL:
         return False
     resend.api_key = RESEND_API_KEY
     try:
@@ -343,6 +400,119 @@ def contact():
     db.session.commit()
 
     return jsonify({"success": True})
+
+
+def admin_required(view):
+    @wraps(view)
+    def wrapped_view(*args, **kwargs):
+        if not session.get('is_admin'):
+            return redirect(url_for('admin_login', next=request.path))
+        return view(*args, **kwargs)
+    return wrapped_view
+
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    error = None
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        code = request.form.get('code', '').strip()
+        valid_password = bool(ADMIN_PASSWORD_HASH) and check_password_hash(ADMIN_PASSWORD_HASH, password)
+        valid_code = bool(ADMIN_TOTP_SECRET) and pyotp.TOTP(ADMIN_TOTP_SECRET).verify(code)
+        if valid_password and valid_code:
+            session['is_admin'] = True
+            return redirect(request.args.get('next') or url_for('admin_home'))
+        error = "Incorrect password or code."
+    return render_template('admin-login.html', error=error)
+
+
+@app.route('/admin/logout')
+@admin_required
+def admin_logout():
+    session.pop('is_admin', None)
+    return redirect(url_for('home'))
+
+
+@app.route('/admin')
+@admin_required
+def admin_home():
+    return render_template('admin.html')
+
+
+def _messages_redirect(form):
+    """Redirects back to the filtered admin_messages view a per-message
+    action form was submitted from, using the hidden status/starred/q
+    fields every such form carries — so changing a status, star, or
+    comment doesn't kick you out of whatever filtered/searched view you
+    were looking at."""
+    params = {k: v for k, v in {
+        'status': form.get('status_filter', ''),
+        'starred': form.get('starred_filter', ''),
+        'q': form.get('q', ''),
+    }.items() if v}
+    return redirect(url_for('admin_messages', **params))
+
+
+@app.route('/admin/messages')
+@admin_required
+def admin_messages():
+    status_filter = request.args.get('status', '').strip()
+    starred_filter = request.args.get('starred', '').strip()
+    query_text = request.args.get('q', '').strip()
+
+    stmt = db.select(ContactMessage)
+    if status_filter in ('new', 'responded', 'resolved'):
+        stmt = stmt.where(ContactMessage.status == status_filter)
+    if starred_filter == '1':
+        stmt = stmt.where(ContactMessage.starred.is_(True))
+    if query_text:
+        like = f"%{query_text}%"
+        stmt = stmt.where(or_(
+            ContactMessage.name.ilike(like),
+            ContactMessage.email.ilike(like),
+            ContactMessage.message.ilike(like),
+        ))
+    stmt = stmt.order_by(ContactMessage.created_at.desc())
+    messages = db.session.execute(stmt).scalars().all()
+
+    return render_template('admin-messages.html', messages=messages,
+                            status_filter=status_filter, starred_filter=starred_filter,
+                            query_text=query_text)
+
+
+@app.route('/admin/messages/<int:message_id>/status', methods=['POST'])
+@admin_required
+def admin_message_status(message_id):
+    msg = db.session.get(ContactMessage, message_id)
+    if msg is None:
+        abort(404)
+    new_status = request.form.get('status')
+    if new_status in ('new', 'responded', 'resolved'):
+        msg.status = new_status
+        db.session.commit()
+    return _messages_redirect(request.form)
+
+
+@app.route('/admin/messages/<int:message_id>/star', methods=['POST'])
+@admin_required
+def admin_message_star(message_id):
+    msg = db.session.get(ContactMessage, message_id)
+    if msg is None:
+        abort(404)
+    msg.starred = not msg.starred
+    db.session.commit()
+    return _messages_redirect(request.form)
+
+
+@app.route('/admin/messages/<int:message_id>/comment', methods=['POST'])
+@admin_required
+def admin_message_comment(message_id):
+    msg = db.session.get(ContactMessage, message_id)
+    if msg is None:
+        abort(404)
+    msg.comment = (request.form.get('comment') or '').strip() or None
+    db.session.commit()
+    return _messages_redirect(request.form)
 
 
 if __name__ == '__main__':

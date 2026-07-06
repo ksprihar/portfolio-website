@@ -1,0 +1,84 @@
+{% set page_title = "Messages — Admin" %}
+{% set page_description = "Contact form submissions." %}
+{% set active_page = "admin" %}
+{% include "header.html" %}
+  <div class="wrap page-wrap">
+    <a class="back-link" href="{{ url_for('admin_home') }}">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      Back to admin
+    </a>
+
+    <div class="page-head">
+      <span class="eyebrow">Admin</span>
+      <h1>Messages</h1>
+    </div>
+
+    <form method="get" class="admin-filter-bar">
+      <input type="text" name="q" placeholder="Search name, email, or message…" value="{{ query_text }}">
+      <select name="status">
+        <option value="">All statuses</option>
+        <option value="new" {% if status_filter == 'new' %}selected{% endif %}>New</option>
+        <option value="responded" {% if status_filter == 'responded' %}selected{% endif %}>Responded</option>
+        <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved</option>
+      </select>
+      <label class="admin-filter-checkbox">
+        <input type="checkbox" name="starred" value="1" {% if starred_filter == '1' %}checked{% endif %}>
+        Starred only
+      </label>
+      <button class="btn ghost" type="submit">Filter</button>
+      {% if status_filter or starred_filter or query_text %}<a class="btn ghost" href="{{ url_for('admin_messages') }}">Clear</a>{% endif %}
+    </form>
+
+    <div class="timeline">
+      {% for msg in messages %}
+      <div class="timeline-item admin-message">
+        <div class="admin-message-head">
+          <div>
+            <p class="timeline-role">{{ msg.name }}</p>
+            <p class="timeline-org">{{ msg.email }}</p>
+          </div>
+          <div class="admin-message-head-right">
+            <form method="post" action="{{ url_for('admin_message_star', message_id=msg.id) }}">
+              <input type="hidden" name="status_filter" value="{{ status_filter }}">
+              <input type="hidden" name="starred_filter" value="{{ starred_filter }}">
+              <input type="hidden" name="q" value="{{ query_text }}">
+              <button type="submit" class="star-toggle{% if msg.starred %} starred{% endif %}" aria-label="{% if msg.starred %}Unstar{% else %}Star{% endif %} message">
+                <svg class="icon" viewBox="0 0 24 24" fill="{% if msg.starred %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              </button>
+            </form>
+            <span class="status-badge status-{{ msg.status }}">{{ msg.status }}</span>
+          </div>
+        </div>
+        <p class="admin-message-body">{{ msg.message }}</p>
+        <div class="admin-message-meta">
+          <span>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }} (Toronto time)</span>
+          <span>{% if msg.email_sent %}Notification sent{% else %}Notification not sent{% endif %}</span>
+        </div>
+        <div class="admin-message-actions">
+          <a class="btn ghost" href="mailto:{{ msg.email }}?subject=Re%3A%20your%20message%20to%20Karanvir%20Prihar">Reply</a>
+          <form method="post" action="{{ url_for('admin_message_status', message_id=msg.id) }}">
+            <input type="hidden" name="status_filter" value="{{ status_filter }}">
+            <input type="hidden" name="starred_filter" value="{{ starred_filter }}">
+            <input type="hidden" name="q" value="{{ query_text }}">
+            <select name="status" onchange="this.form.submit()">
+              <option value="new" {% if msg.status == 'new' %}selected{% endif %}>New</option>
+              <option value="responded" {% if msg.status == 'responded' %}selected{% endif %}>Responded</option>
+              <option value="resolved" {% if msg.status == 'resolved' %}selected{% endif %}>Resolved</option>
+            </select>
+          </form>
+        </div>
+        <form method="post" action="{{ url_for('admin_message_comment', message_id=msg.id) }}" class="admin-comment-form">
+          <input type="hidden" name="status_filter" value="{{ status_filter }}">
+          <input type="hidden" name="starred_filter" value="{{ starred_filter }}">
+          <input type="hidden" name="q" value="{{ query_text }}">
+          <label for="comment-{{ msg.id }}">Internal comment</label>
+          <textarea id="comment-{{ msg.id }}" name="comment" placeholder="Not shown to the sender…">{{ msg.comment or '' }}</textarea>
+          <button class="btn ghost" type="submit">Save comment</button>
+        </form>
+      </div>
+      {% else %}
+      <p class="lead">{% if status_filter or starred_filter or query_text %}No messages match these filters.{% else %}No messages yet.{% endif %}</p>
+      {% endfor %}
+    </div>
+  </div>
+{% include "footer.html" %}

@@ -1,0 +1,15 @@
+{% set page_title = "Admin — Karanvir Prihar" %}
+{% set page_description = "Admin dashboard." %}
+{% set active_page = "admin" %}
+{% include "header.html" %}
+  <div class="wrap page-wrap">
+    <div class="page-head">
+      <span class="eyebrow">Admin</span>
+      <h1>Dashboard</h1>
+    </div>
+    <div class="cta-row">
+      <a class="btn primary" href="{{ url_for('admin_messages') }}">Messages</a>
+      <a class="btn ghost" href="{{ url_for('admin_logout') }}">Logout</a>
+    </div>
+  </div>
+{% include "footer.html" %}

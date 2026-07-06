@@ -6,3 +6,4 @@ requests
 Markdown
 resend
 python-frontmatter
+pyotp

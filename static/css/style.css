@@ -170,7 +170,7 @@ main{padding-top:var(--header-h);}
 }
 h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 .section-head{display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:48px; gap:16px; flex-wrap:wrap;}
-.section-head h2{font-size:32px;}
+.section-head h2, .contact-heading{font-size:30px;}
 .view-all{
   display:none;
   align-items:center; gap:6px;
@@ -182,7 +182,8 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 /* ---- Hero ---- */
 .hero{padding:72px 0 80px; border-top:none;}
 .hero-grid{display:grid; grid-template-columns:1fr; gap:64px; align-items:center;}
-.hero h1{font-size:44px; line-height:1.08; margin-bottom:24px;}
+.hero .eyebrow{margin-bottom:24px;}
+.hero h1{font-size:48px; line-height:1.05; margin-bottom:24px;}
 .hero h1 em{font-style:italic; color:var(--accent);}
 .hero .lead{color:var(--sub); max-width:560px; margin-bottom:16px; font-size:17px; line-height:1.7;}
 .hero .lead + .lead{margin-bottom:40px;}
@@ -210,6 +211,38 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 .hero-badge .sub{font-family:var(--mono); font-size:12px; color:var(--sub);}
 
 /* ---- About ---- */
+.about-header{
+  display:grid; grid-template-columns:1fr; gap:48px; align-items:start;
+  margin-bottom:64px; padding-bottom:64px; border-bottom:1px solid var(--line);
+}
+.about-photo-wrap{display:flex; justify-content:center;}
+.about-photo{
+  width:192px; height:192px; overflow:hidden; flex-shrink:0;
+  border:1px solid var(--line); background:var(--secondary); border-radius:var(--radius);
+}
+.about-photo img{
+  width:100%; height:100%; object-fit:cover; object-position:top;
+  filter:grayscale(1); transition:filter .5s ease;
+}
+.about-photo:hover img{filter:grayscale(0);}
+/* Figma: text-4xl/lg:text-5xl (36px/48px), font-semibold (global h1 rule
+   already carries the 600 weight) — this page's h1 previously had no
+   explicit size of its own, so it fell back to the browser's default UA
+   heading size instead of matching Figma. No max-width here (and none on
+   .lead below) — Figma doesn't cap this text either, it just fills the
+   1fr grid column next to the photo. A max-width added in an earlier pass
+   was capping it well short of that column, causing an extra line wrap
+   that Figma doesn't have. */
+/* line-height matters here too: with no override this inherits body's
+   line-height:1.6, which pads a lot of extra visual space above/below a
+   single line of heading text (Figma's text-4xl/text-5xl utilities carry
+   their own tight line-height, ~1.1). That's why the eyebrow-to-heading and
+   heading-to-paragraph gaps read as bigger than Figma even though the
+   margin values themselves already matched. */
+.about-header h1{font-size:36px; line-height:1.1; margin-bottom:4px;}
+.about-header .lead{color:var(--sub); font-size:16px; line-height:1.7; font-family:var(--mono); margin-bottom:20px;}
+.about-header .lead + .lead{font-family:var(--sans); margin-bottom:0;}
+.about-header + h2{font-size:24px; margin-bottom:40px;}
 .about-grid{display:grid; grid-template-columns:1fr; gap:48px;}
 .about-copy{color:var(--sub); line-height:1.75;}
 .about-copy p{margin-bottom:20px;}
@@ -218,9 +251,15 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 .timeline{display:flex; flex-direction:column; gap:12px;}
 .timeline-item{
   border:1px solid var(--line); background:var(--card); padding:20px;
-  position:relative; overflow:hidden; transition:border-color .3s ease;
+  position:relative; transition:border-color .3s ease;
 }
 .timeline-item:hover{border-color:color-mix(in srgb, var(--accent) 30%, var(--line));}
+/* Same thicker-left-edge hover treatment as .post-item (blog cards). */
+.timeline-item::before{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:2px;
+  background:var(--accent); opacity:0; transition:opacity .3s ease;
+}
+.timeline-item:hover::before{opacity:1;}
 .timeline-year{font-family:var(--mono); font-size:12px; color:var(--accent); margin-bottom:4px;}
 .timeline-role{font-size:14px; font-weight:500; margin-bottom:2px;}
 .timeline-org{font-size:12px; color:var(--sub); margin-bottom:8px;}
@@ -257,14 +296,42 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
   font-family:var(--mono); font-size:14px; font-weight:500; color:var(--ink);
 }
 .project-card:hover .project-card-name h3, .project-card:hover .project-card-name h2{color:var(--accent);}
-.project-card-head > .icon{color:var(--sub); margin-top:2px;}
+.project-card-head > .icon{color:var(--sub); margin-top:2px; transition:color .2s ease;}
+/* Covers both the external-link icon (home cards) and the chevron (projects
+   page cards) — same markup position (direct child of .project-card-head)
+   on both pages, so one rule handles both. */
+.project-card:hover .project-card-head > .icon{color:var(--accent);}
 .project-desc{color:var(--sub); font-size:14px; line-height:1.7;}
 .project-tagline{font-size:12px; color:var(--accent); font-style:normal;}
 .project-meta{display:flex; align-items:center; gap:20px; padding-top:12px; border-top:1px solid var(--line); flex-wrap:wrap;}
 .project-meta span{display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:12px; color:var(--sub);}
 .lang-dot{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
-.read-report{margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--accent);}
+/* .project-meta .read-report (2 classes) needed, not just .read-report (1
+   class) — .project-meta span already matches with equal-or-higher
+   specificity (class+element), so a single-class .read-report rule was
+   silently losing that specificity fight and never actually showing accent
+   color. The underline-on-hover rule below doesn't need the same fix since
+   it already has 3 classes worth of specificity. */
+.project-meta .read-report{margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--accent);}
 .project-card:hover .read-report{text-decoration:underline;}
+
+/* ---- Stat number background-refresh animation ----
+   Stars/forks render straight from the DB (see project_stats() /
+   get_projects_github_data() in main.py) — no live GitHub call blocks the
+   initial page load. main.js quietly re-checks GitHub shortly after load
+   and, if a number changed, briefly turns it into two stacked lines (old
+   sliding up and out, new sliding up and fading in from below) before
+   settling back to plain text. */
+.stat-num{position:relative; display:inline-block;}
+.stat-num.stat-anim{overflow:hidden; height:1em; vertical-align:bottom; min-width:1ch;}
+.stat-slide{
+  position:absolute; top:0; left:0; width:100%;
+  transition:transform .4s ease, opacity .4s ease;
+}
+.stat-slide-old{transform:translateY(0); opacity:1;}
+.stat-slide-new{transform:translateY(100%); opacity:0;}
+.stat-num.stat-anim-active .stat-slide-old{transform:translateY(-100%); opacity:0;}
+.stat-num.stat-anim-active .stat-slide-new{transform:translateY(0); opacity:1;}
 
 /* ---- Blog list ---- */
 .post-list{display:flex; flex-direction:column; gap:1px;}
@@ -274,6 +341,13 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
   position:relative; transition:border-color .3s ease;
 }
 .post-item:hover{border-color:color-mix(in srgb, var(--accent) 30%, var(--line));}
+/* Thicker hover accent on the left edge (matches Figma's absolute bar,
+   rather than a plain border-color change on the whole box). */
+.post-item::before{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:2px;
+  background:var(--accent); opacity:0; transition:opacity .3s ease;
+}
+.post-item:hover::before{opacity:1;}
 .post-index{font-family:var(--mono); font-size:12px; color:var(--sub);}
 .post-title{font-size:18px; margin-bottom:8px; line-height:1.4;}
 .post-item:hover .post-title{color:var(--accent);}
@@ -282,11 +356,18 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 .post-meta span{display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:12px; color:var(--sub);}
 .post-read{margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--sub);}
 .post-item:hover .post-read{color:var(--accent);}
+/* Trailing arrow on home-page blog cards (Figma: hidden on mobile, shown
+   once the card switches to a row layout at the same 780px breakpoint as
+   .post-item itself, further down in Responsive). */
+.post-arrow{display:none; align-items:center; color:var(--sub); flex-shrink:0; transition:color .2s ease;}
+.post-item:hover .post-arrow{color:var(--accent);}
 .more-posts{
   margin-top:48px; border:1px dashed var(--line); padding:32px; text-align:center;
 }
 .more-posts p:first-child{font-family:var(--mono); font-size:12px; color:var(--sub); margin-bottom:8px;}
 .more-posts p:last-child{font-size:14px; color:var(--sub);}
+.more-posts p:last-child a{color:var(--sub); text-decoration:underline; text-underline-offset:2px;}
+.more-posts p:last-child a:hover{color:var(--accent);}
 
 /* ---- Contact ---- */
 .contact-grid{display:grid; grid-template-columns:1fr; gap:48px;}
@@ -335,13 +416,18 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 .page-head .lead{color:var(--sub); max-width:560px; font-size:15px; line-height:1.7;}
 .page-wrap{padding-bottom:96px;}
 
+/* ---- 404 ---- */
+.not-found{padding-top:96px;}
+.not-found h1{font-size:48px; line-height:1.1; margin-bottom:20px;}
+.not-found .lead{color:var(--sub); max-width:560px; font-size:16px; line-height:1.7; margin-bottom:40px;}
+
 /* ---- Project detail ---- */
 .detail-header{
   display:flex; flex-direction:column; gap:32px;
   padding-bottom:56px; margin-bottom:56px; border-bottom:1px solid var(--line);
 }
 .detail-repo-path{display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12px; color:var(--sub); margin-bottom:16px;}
-.detail-header h1{font-size:34px; margin-bottom:16px; line-height:1.2;}
+.detail-header h1{font-size:36px; margin-bottom:16px; line-height:1.2;}
 .detail-tagline{color:var(--sub); font-size:17px; margin-bottom:20px; max-width:600px;}
 .detail-header-info .tags{max-width:600px;}
 .detail-stats{display:flex; align-items:center; gap:20px; flex-wrap:wrap;}
@@ -350,7 +436,7 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 
 .report-grid{display:grid; grid-template-columns:1fr; gap:48px;}
 .report-body{display:flex; flex-direction:column; gap:56px;}
-.report-section h2{font-size:22px; margin-bottom:18px;}
+.report-section h2{font-size:24px; margin-bottom:20px;}
 .report-section p{color:var(--sub); line-height:1.75; margin-bottom:16px;}
 .report-section p:last-child{margin-bottom:0;}
 .results-content{display:flex; flex-direction:column; gap:12px;}
@@ -371,8 +457,8 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
   content:"";
   position:absolute; left:0; top:5px; width:15px; height:15px;
   background-color:var(--accent);
-  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E") center / contain no-repeat;
-  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E") center / contain no-repeat;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21.801 10A10 10 0 1 1 17 3.335'%3E%3C/path%3E%3Cpath d='m9 11 3 3L22 4'%3E%3C/path%3E%3C/svg%3E") center / contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21.801 10A10 10 0 1 1 17 3.335'%3E%3C/path%3E%3Cpath d='m9 11 3 3L22 4'%3E%3C/path%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 .chart-embed{
@@ -392,7 +478,7 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 }
 .code-content pre code{font-family:var(--mono); font-size:12px; line-height:1.7; color:var(--ink); white-space:pre;}
 
-.markdown-body h2{font-size:22px; margin:56px 0 18px; scroll-margin-top:calc(var(--header-h) + 20px);}
+.markdown-body h2{font-size:20px; margin:48px 0 16px; scroll-margin-top:calc(var(--header-h) + 20px);}
 .markdown-body h2:first-child{margin-top:0;}
 .markdown-body p{color:var(--sub); line-height:1.75; margin-bottom:16px;}
 .markdown-body ul,.markdown-body ol{color:var(--sub); line-height:1.75; margin:0 0 16px; padding-left:22px;}
@@ -422,7 +508,7 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 /* ---- Blog post ---- */
 .post-header{max-width:680px; padding-bottom:56px; margin-bottom:56px; border-bottom:1px solid var(--line);}
 .post-header .tags{margin-bottom:20px;}
-.post-header h1{font-size:32px; margin-bottom:20px; line-height:1.35;}
+.post-header h1{font-size:30px; margin-bottom:20px; line-height:1.35;}
 .post-header .lead{color:var(--sub); font-size:16px; line-height:1.7; margin-bottom:24px;}
 .post-header-meta{display:flex; align-items:center; gap:20px;}
 .post-header-meta span{display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:12px; color:var(--sub);}
@@ -454,22 +540,32 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
   .nav-desktop{display:flex;}
   .mobile-nav, .nav-toggle{display:none !important;}
   .hero-grid{grid-template-columns:1fr auto;}
-  .hero h1{font-size:60px;}
+  .hero h1{font-size:72px;}
   .hero-badges{flex-direction:column;}
+  .section-head h2, .contact-heading{font-size:36px;}
+  .about-header{grid-template-columns:auto 1fr;}
+  .about-photo-wrap{justify-content:flex-start;}
+  .about-photo{width:224px; height:224px;}
+  .about-header h1{font-size:48px;}
+  .about-header + h2{font-size:30px;}
   .about-grid{grid-template-columns:1fr 1fr;}
   .skills-grid{grid-template-columns:repeat(3,1fr);}
   .now-grid{grid-template-columns:repeat(3,1fr);}
   .project-grid{grid-template-columns:1fr 1fr;}
   .contact-grid{grid-template-columns:1fr 1fr;}
   .view-all{display:inline-flex;}
+  .page-head h1{font-size:48px;}
   .detail-header{flex-direction:row; align-items:flex-start; justify-content:space-between;}
   .detail-header-info{min-width:0; flex:1 1 auto;}
+  .detail-header h1{font-size:48px;}
   .detail-actions{flex-direction:column; align-items:flex-end; flex-shrink:0;}
   .report-grid{grid-template-columns:1fr 260px;}
   .detail-sidebar{position:sticky; top:80px;}
   .post-item{flex-direction:row; align-items:flex-start; gap:32px;}
   .post-index{flex-shrink:0; width:24px;}
+  .post-arrow{display:flex; align-self:center;}
   .post-nav{grid-template-columns:1fr 1fr;}
+  .post-header h1{font-size:36px;}
 }
 
 @media (max-width: 779px){
@@ -522,3 +618,56 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
   width:1px; height:1px; overflow:hidden;
   opacity:0; pointer-events:none;
 }
+
+/* ---- Admin ---- */
+.admin-filter-bar{
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  margin-bottom:32px; padding-bottom:32px; border-bottom:1px solid var(--line);
+}
+.admin-filter-bar input[type="text"]{
+  flex:1 1 240px; background:var(--secondary); border:1px solid var(--line); color:var(--ink);
+  padding:10px 14px; font-family:var(--sans); font-size:14px; border-radius:var(--radius);
+}
+.admin-filter-bar input[type="text"]:focus{outline:none; border-color:color-mix(in srgb, var(--accent) 50%, var(--line));}
+.admin-filter-bar select{
+  background:var(--secondary); border:1px solid var(--line); color:var(--ink);
+  padding:10px 12px; font-family:var(--sans); font-size:14px; border-radius:var(--radius);
+}
+.admin-filter-checkbox{
+  display:flex; align-items:center; gap:8px;
+  font-family:var(--mono); font-size:12px; color:var(--sub); white-space:nowrap;
+}
+.admin-message{display:flex; flex-direction:column; gap:12px;}
+.admin-message-head{display:flex; align-items:flex-start; justify-content:space-between; gap:16px;}
+.admin-message-head-right{display:flex; align-items:center; gap:12px;}
+.admin-message-body{color:var(--sub); font-size:14px; line-height:1.7; white-space:pre-wrap;}
+.admin-message-meta{display:flex; gap:16px; flex-wrap:wrap; font-family:var(--mono); font-size:12px; color:var(--sub);}
+.admin-message-actions{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+.admin-message-actions select{
+  background:var(--secondary); border:1px solid var(--line); color:var(--ink);
+  padding:8px 12px; font-family:var(--sans); font-size:13px; border-radius:var(--radius);
+}
+.admin-comment-form{display:flex; flex-direction:column; gap:8px; border-top:1px solid var(--line); padding-top:16px;}
+.admin-comment-form label{font-family:var(--mono); font-size:12px; color:var(--sub);}
+.admin-comment-form textarea{
+  width:100%; background:var(--secondary); border:1px solid var(--line); color:var(--ink);
+  padding:10px 14px; font-family:var(--sans); font-size:14px; border-radius:var(--radius);
+  resize:vertical; min-height:60px;
+}
+.admin-comment-form textarea:focus{outline:none; border-color:color-mix(in srgb, var(--accent) 50%, var(--line));}
+.admin-comment-form .btn.ghost{align-self:flex-start;}
+.star-toggle{
+  background:none; border:none; padding:4px; color:var(--sub); cursor:pointer;
+  display:inline-flex; align-items:center; transition:color .2s ease;
+}
+.star-toggle .icon{width:16px; height:16px;}
+.star-toggle:hover{color:var(--accent);}
+.star-toggle.starred{color:var(--accent);}
+.status-badge{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  padding:4px 10px; border-radius:var(--radius); border:1px solid var(--line); white-space:nowrap;
+}
+.status-new{color:var(--accent); border-color:color-mix(in srgb, var(--accent) 40%, var(--line));}
+.status-responded{color:var(--ink);}
+.status-resolved{color:var(--sub);}
+.form-note.error{color:#c65f4a;}

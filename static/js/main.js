@@ -73,6 +73,60 @@ function toggleTheme() {
   }, 1200);
 })();
 
+// ---- Background-refresh: stars/forks ----
+// Numbers are already correct-as-of-last-seed on the page (rendered
+// straight from the DB, no live GitHub call on page load). Shortly after
+// load, quietly ask the server to check GitHub for anything newer and
+// animate any number that changed — old value slides up and out, new
+// value slides up and fades in from below.
+(function () {
+  const statEls = Array.from(document.querySelectorAll('.stat-num[data-slug]'));
+  if (!statEls.length) return;
+
+  const slugs = [...new Set(statEls.map((el) => el.dataset.slug))];
+
+  function animateStatChange(el, newValue) {
+    const current = el.textContent.trim();
+    if (current === String(newValue)) return;
+
+    el.classList.add('stat-anim');
+    el.innerHTML =
+      '<span class="stat-slide stat-slide-old">' + current + '</span>' +
+      '<span class="stat-slide stat-slide-new">' + newValue + '</span>';
+
+    // Double rAF: first paints the "before" state (old in place, new
+    // waiting below), second frame then adds the class that triggers the
+    // CSS transition — without this the browser can coalesce both style
+    // changes into one frame and skip the animation entirely.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => el.classList.add('stat-anim-active'));
+    });
+
+    setTimeout(() => {
+      el.textContent = newValue;
+      el.classList.remove('stat-anim', 'stat-anim-active');
+    }, 450);
+  }
+
+  setTimeout(() => {
+    fetch('/api/project-stats?slugs=' + encodeURIComponent(slugs.join(',')))
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data) return;
+        statEls.forEach((el) => {
+          const stats = data[el.dataset.slug];
+          if (!stats) return;
+          const newValue = stats[el.dataset.stat];
+          if (newValue === undefined) return;
+          animateStatChange(el, newValue);
+        });
+      })
+      .catch(() => {
+        // Silent — this is a cosmetic background refresh, not critical path.
+      });
+  }, 1500);
+})();
+
 // ---- Hide navbar on scroll down, show on scroll up ----
 const siteHeader = document.querySelector('.site-header');
 
