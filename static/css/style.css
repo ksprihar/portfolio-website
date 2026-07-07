@@ -197,7 +197,7 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 }
 .btn.primary{background:var(--accent); color:var(--accent-ink);}
 .btn.primary:hover{opacity:.8;}
-.btn.ghost{border:1px solid var(--line); color:var(--ink);}
+.btn.ghost{border:1px solid var(--line); color:var(--ink); background:none;}
 .btn.ghost:hover{border-color:color-mix(in srgb, var(--accent) 60%, var(--line)); color:var(--accent);}
 
 .hero-badges{display:flex; flex-direction:row; flex-wrap:wrap; gap:12px;}
@@ -411,6 +411,7 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
   margin-bottom:40px; padding-top:56px;
 }
 .back-link:hover{color:var(--accent);}
+.page-wrap > .page-head:first-child{padding-top:56px;}
 .page-head{margin-bottom:56px;}
 .page-head h1{font-size:36px; margin-bottom:16px;}
 .page-head .lead{color:var(--sub); max-width:560px; font-size:15px; line-height:1.7;}
@@ -663,11 +664,14 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 .star-toggle .icon{width:16px; height:16px;}
 .star-toggle:hover{color:var(--accent);}
 .star-toggle.starred{color:var(--accent);}
+.star-toggle.starred .icon{fill:currentColor;}
+.delete-btn:hover{border-color:#c65f4a; color:#c65f4a;}
 .status-badge{
   font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
   padding:4px 10px; border-radius:var(--radius); border:1px solid var(--line); white-space:nowrap;
 }
 .status-new{color:var(--accent); border-color:color-mix(in srgb, var(--accent) 40%, var(--line));}
+.status-potential{color:var(--accent); border-color:color-mix(in srgb, var(--accent) 70%, var(--line));}
 .status-responded{color:var(--ink);}
 .status-resolved{color:var(--sub);}
 .form-note.error{color:#c65f4a;}

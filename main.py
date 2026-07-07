@@ -81,6 +81,15 @@ def render_markdown(text):
     return Markup(_markdown_converter().convert(text))
 
 
+@app.template_filter('local_time')
+def to_local_time(dt):
+    """Converts a naive UTC datetime (as stored in the DB) to Toronto local
+    time for display — storage stays UTC, only the admin view is localized."""
+    if dt is None:
+        return ""
+    return dt.replace(tzinfo=timezone.utc).astimezone(ZoneInfo("America/Toronto"))
+
+
 class Project(db.Model):
     __tablename__ = 'project_table'
     order_index: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -118,13 +127,12 @@ class ContactMessage(db.Model):
     name: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[str] = mapped_column(String, nullable=False)
     message: Mapped[str] = mapped_column(String, nullable=False)
-    # Stored as Toronto local wall-clock time (naive, tzinfo stripped before
-    # save — SQLite has no real timezone-aware column type, so this mirrors
-    # the previous UTC convention but with America/Toronto clock values
-    # instead). Handles EST/EDT automatically via zoneinfo.
+    # Stored as UTC (naive, tzinfo stripped before save — SQLite has no real
+    # timezone-aware column type). Converted to local time only for display,
+    # via the `local_time` template filter — see admin_messages.
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False,
-        default=lambda: datetime.now(ZoneInfo("America/Toronto")).replace(tzinfo=None)
+        default=lambda: datetime.now(timezone.utc).replace(tzinfo=None)
     )
     # Every submission lands here regardless of whether the notification
     # email succeeds, so nothing sent through the form is ever silently
@@ -461,7 +469,7 @@ def admin_messages():
     query_text = request.args.get('q', '').strip()
 
     stmt = db.select(ContactMessage)
-    if status_filter in ('new', 'responded', 'resolved'):
+    if status_filter in ('new', 'potential', 'responded', 'resolved'):
         stmt = stmt.where(ContactMessage.status == status_filter)
     if starred_filter == '1':
         stmt = stmt.where(ContactMessage.starred.is_(True))
@@ -487,7 +495,7 @@ def admin_message_status(message_id):
     if msg is None:
         abort(404)
     new_status = request.form.get('status')
-    if new_status in ('new', 'responded', 'resolved'):
+    if new_status in ('new', 'potential', 'responded', 'resolved'):
         msg.status = new_status
         db.session.commit()
     return _messages_redirect(request.form)
@@ -511,6 +519,17 @@ def admin_message_comment(message_id):
     if msg is None:
         abort(404)
     msg.comment = (request.form.get('comment') or '').strip() or None
+    db.session.commit()
+    return _messages_redirect(request.form)
+
+
+@app.route('/admin/messages/<int:message_id>/delete', methods=['POST'])
+@admin_required
+def admin_message_delete(message_id):
+    msg = db.session.get(ContactMessage, message_id)
+    if msg is None:
+        abort(404)
+    db.session.delete(msg)
     db.session.commit()
     return _messages_redirect(request.form)
 

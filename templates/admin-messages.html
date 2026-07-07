@@ -18,6 +18,7 @@
       <select name="status">
         <option value="">All statuses</option>
         <option value="new" {% if status_filter == 'new' %}selected{% endif %}>New</option>
+        <option value="potential" {% if status_filter == 'potential' %}selected{% endif %}>Potential</option>
         <option value="responded" {% if status_filter == 'responded' %}selected{% endif %}>Responded</option>
         <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved</option>
       </select>
@@ -38,7 +39,7 @@
             <p class="timeline-org">{{ msg.email }}</p>
           </div>
           <div class="admin-message-head-right">
-            <form method="post" action="{{ url_for('admin_message_star', message_id=msg.id) }}">
+            <form method="post" action="{{ url_for('admin_message_star', message_id=msg.id) }}" class="star-form">
               <input type="hidden" name="status_filter" value="{{ status_filter }}">
               <input type="hidden" name="starred_filter" value="{{ starred_filter }}">
               <input type="hidden" name="q" value="{{ query_text }}">
@@ -51,20 +52,27 @@
         </div>
         <p class="admin-message-body">{{ msg.message }}</p>
         <div class="admin-message-meta">
-          <span>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }} (Toronto time)</span>
+          <span>{{ (msg.created_at | local_time).strftime('%Y-%m-%d %H:%M') }}</span>
           <span>{% if msg.email_sent %}Notification sent{% else %}Notification not sent{% endif %}</span>
         </div>
         <div class="admin-message-actions">
           <a class="btn ghost" href="mailto:{{ msg.email }}?subject=Re%3A%20your%20message%20to%20Karanvir%20Prihar">Reply</a>
-          <form method="post" action="{{ url_for('admin_message_status', message_id=msg.id) }}">
+          <form method="post" action="{{ url_for('admin_message_status', message_id=msg.id) }}" class="status-form">
             <input type="hidden" name="status_filter" value="{{ status_filter }}">
             <input type="hidden" name="starred_filter" value="{{ starred_filter }}">
             <input type="hidden" name="q" value="{{ query_text }}">
-            <select name="status" onchange="this.form.submit()">
+            <select name="status" class="status-select">
               <option value="new" {% if msg.status == 'new' %}selected{% endif %}>New</option>
+              <option value="potential" {% if msg.status == 'potential' %}selected{% endif %}>Potential</option>
               <option value="responded" {% if msg.status == 'responded' %}selected{% endif %}>Responded</option>
               <option value="resolved" {% if msg.status == 'resolved' %}selected{% endif %}>Resolved</option>
             </select>
+          </form>
+          <form method="post" action="{{ url_for('admin_message_delete', message_id=msg.id) }}" class="delete-form">
+            <input type="hidden" name="status_filter" value="{{ status_filter }}">
+            <input type="hidden" name="starred_filter" value="{{ starred_filter }}">
+            <input type="hidden" name="q" value="{{ query_text }}">
+            <button type="submit" class="btn ghost delete-btn">Delete</button>
           </form>
         </div>
         <form method="post" action="{{ url_for('admin_message_comment', message_id=msg.id) }}" class="admin-comment-form">
@@ -81,4 +89,65 @@
       {% endfor %}
     </div>
   </div>
+  <script>
+    var EMPTY_MESSAGE = {{ ('No messages match these filters.' if (status_filter or starred_filter or query_text) else 'No messages yet.') | tojson }};
+
+    document.querySelectorAll('.star-form').forEach(function (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var btn = form.querySelector('.star-toggle');
+        fetch(form.action, { method: 'POST', body: new FormData(form) }).then(function (res) {
+          if (!res.ok) return;
+          var willStar = !btn.classList.contains('starred');
+          btn.classList.toggle('starred', willStar);
+          btn.setAttribute('aria-label', (willStar ? 'Unstar' : 'Star') + ' message');
+          btn.querySelector('svg').setAttribute('fill', willStar ? 'currentColor' : 'none');
+        });
+      });
+    });
+
+    document.querySelectorAll('.status-select').forEach(function (select) {
+      select.addEventListener('change', function () {
+        var form = select.closest('form');
+        fetch(form.action, { method: 'POST', body: new FormData(form) }).then(function (res) {
+          if (!res.ok) return;
+          var badge = form.closest('.admin-message').querySelector('.status-badge');
+          badge.textContent = select.value;
+          badge.className = 'status-badge status-' + select.value;
+        });
+      });
+    });
+
+    document.querySelectorAll('.admin-comment-form').forEach(function (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var btn = form.querySelector('button[type="submit"]');
+        fetch(form.action, { method: 'POST', body: new FormData(form) }).then(function (res) {
+          if (!res.ok) return;
+          var original = btn.textContent;
+          btn.textContent = 'Saved';
+          setTimeout(function () { btn.textContent = original; }, 1500);
+        });
+      });
+    });
+
+    document.querySelectorAll('.delete-form').forEach(function (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var typed = prompt('Type "delete" to permanently remove this message.');
+        if (typed !== 'delete') return;
+        fetch(form.action, { method: 'POST', body: new FormData(form) }).then(function (res) {
+          if (!res.ok) return;
+          var timeline = document.querySelector('.timeline');
+          form.closest('.admin-message').remove();
+          if (!timeline.querySelector('.admin-message')) {
+            var p = document.createElement('p');
+            p.className = 'lead';
+            p.textContent = EMPTY_MESSAGE;
+            timeline.appendChild(p);
+          }
+        });
+      });
+    });
+  </script>
 {% include "footer.html" %}
