@@ -62,6 +62,7 @@
           <div class="results-content">
             {{ project.results | markdown }}
           </div>
+          {% if project.chart %}<div class="chart-embed">{{ project.chart | safe }}</div>{% endif %}
         </section>
 
         <section class="report-section">

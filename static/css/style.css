@@ -157,7 +157,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   font-family:var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase;
   color:var(--sub); background:none; border:none; display:flex; align-items:center; gap:8px;
 }
-.mobile-nav a:hover{color:var(--ink);}
+.mobile-nav a:hover, .mobile-nav button.theme-toggle-mobile:hover{color:var(--ink);}
 .mobile-nav a.active{color:var(--accent);}
 
 /* ---- Section scaffolding ---- */
@@ -200,11 +200,11 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 .btn.ghost{border:1px solid var(--line); color:var(--ink); background:none;}
 .btn.ghost:hover{border-color:color-mix(in srgb, var(--accent) 60%, var(--line)); color:var(--accent);}
 
-.hero-badges{display:flex; flex-direction:row; flex-wrap:wrap; gap:12px;}
+.hero-badges{display:none; flex-wrap:wrap; gap:12px;}
 .hero-badge{
   display:flex; align-items:center; gap:16px;
   border:1px solid var(--line); background:var(--card);
-  padding:16px 20px; width:100%; max-width:260px;
+  padding:16px 20px; width:240px;
 }
 .hero-badge .icon{width:18px; height:18px; color:var(--accent);}
 .hero-badge .label{font-size:14px; font-weight:500;}
@@ -436,7 +436,7 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 .detail-actions{display:flex; flex-direction:row; flex-wrap:wrap; gap:12px;}
 
 .report-grid{display:grid; grid-template-columns:1fr; gap:48px;}
-.report-body{display:flex; flex-direction:column; gap:56px;}
+.report-body{display:flex; flex-direction:column; gap:56px; min-width:0; container-type:inline-size;}
 .report-section h2{font-size:24px; margin-bottom:20px;}
 .report-section p{color:var(--sub); line-height:1.75; margin-bottom:16px;}
 .report-section p:last-child{margin-bottom:0;}
@@ -463,11 +463,16 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 }
 
 .chart-embed{
-  width:100%; height:340px; margin:8px 0 4px;
+  width:100%;
+  /* 1024px .wrap cap, minus its 48px padding, minus .report-grid's 48px gap,
+     minus the 260px sidebar — the widest .report-body (content column) ever
+     gets at the 2-column (1024px+) breakpoint. Caps the chart so it doesn't
+     balloon past that in the single-column layout below 1024px. */
+  max-width:calc(1024px - 48px - 48px - 260px);
+  height:clamp(220px, 24cqw + 178px, 350px); margin:8px 0 4px;
   border:1px solid var(--line); border-radius:var(--radius); background:var(--secondary);
   overflow:hidden;
 }
-@media (max-width:600px){ .chart-embed{height:220px;} }
 /* Project.code is now rendered as one Markdown block (label paragraph +
    fenced code), so the label/box styling that used to target .code-label/
    .code-block targets the markdown filter's own <p>/<pre><code> output
@@ -542,12 +547,7 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
   .mobile-nav, .nav-toggle{display:none !important;}
   .hero-grid{grid-template-columns:1fr auto;}
   .hero h1{font-size:72px;}
-  .hero-badges{flex-direction:column;}
   .section-head h2, .contact-heading{font-size:36px;}
-  .about-header{grid-template-columns:auto 1fr;}
-  .about-photo-wrap{justify-content:flex-start;}
-  .about-photo{width:224px; height:224px;}
-  .about-header h1{font-size:48px;}
   .about-header + h2{font-size:30px;}
   .about-grid{grid-template-columns:1fr 1fr;}
   .skills-grid{grid-template-columns:repeat(3,1fr);}
@@ -556,17 +556,27 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
   .contact-grid{grid-template-columns:1fr 1fr;}
   .view-all{display:inline-flex;}
   .page-head h1{font-size:48px;}
-  .detail-header{flex-direction:row; align-items:flex-start; justify-content:space-between;}
-  .detail-header-info{min-width:0; flex:1 1 auto;}
   .detail-header h1{font-size:48px;}
-  .detail-actions{flex-direction:column; align-items:flex-end; flex-shrink:0;}
-  .report-grid{grid-template-columns:1fr 260px;}
-  .detail-sidebar{position:sticky; top:80px;}
   .post-item{flex-direction:row; align-items:flex-start; gap:32px;}
   .post-index{flex-shrink:0; width:24px;}
   .post-arrow{display:flex; align-self:center;}
   .post-nav{grid-template-columns:1fr 1fr;}
   .post-header h1{font-size:36px;}
+}
+
+/* Matches Figma's lg: (1024px) breakpoint rather than the site's usual
+   780px "desktop" breakpoint — scoped to just the sections asked for. */
+@media (min-width: 1024px){
+  .hero-badges{display:flex; flex-direction:column;}
+  .detail-header{flex-direction:row; align-items:flex-start; justify-content:space-between;}
+  .detail-header-info{min-width:0; flex:1 1 auto;}
+  .detail-actions{flex-direction:column; align-items:flex-end; flex-shrink:0;}
+  .report-grid{grid-template-columns:1fr 260px;}
+  .detail-sidebar{position:sticky; top:80px;}
+  .about-header{grid-template-columns:auto 1fr;}
+  .about-photo-wrap{justify-content:flex-start;}
+  .about-photo{width:224px; height:224px;}
+  .about-header h1{font-size:48px;}
 }
 
 @media (max-width: 779px){

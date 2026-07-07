@@ -131,6 +131,15 @@ function toggleTheme() {
 const siteHeader = document.querySelector('.site-header');
 
 if (siteHeader) {
+  // The entrance animation (reveal-up, fill-mode "both") holds its final
+  // transform value indefinitely once finished, which silently overrides
+  // the nav-hidden class below (animated properties beat stylesheet rules
+  // for as long as the animation's fill-mode keeps holding them). Clearing
+  // the animation once it's done hands transform back to the cascade.
+  siteHeader.addEventListener('animationend', () => {
+    siteHeader.style.animation = 'none';
+  }, { once: true });
+
   let lastScrollY = window.scrollY;
   let ticking = false;
 

@@ -71,7 +71,7 @@ def load_project(path):
     content = project.content
     content_list = re.split(r'(^## .+$)', content, flags=re.MULTILINE)
 
-    accepted_keys = ['why', 'how', 'results', 'code']
+    accepted_keys = ['why', 'how', 'results', 'code', 'chart']
     for i, c in enumerate(content_list):
         if re.findall(r'^## (.+)$', c):
             dict_key = re.findall(r'^## (.+)$', c)[0].lower().strip()

@@ -100,6 +100,11 @@ class Project(db.Model):
     how: Mapped[str] = mapped_column(String, nullable=False)
     results: Mapped[str] = mapped_column(String, nullable=False)
     code: Mapped[str] = mapped_column(String, nullable=False)
+    # Raw pasted chart embed (e.g. a Plotly export's script/div snippet) for
+    # the project's "## Chart" section. Nullable — most projects won't have
+    # one. Rendered with |safe (not |markdown) and wrapped in .chart-embed
+    # by project-detail.html, not by the author — see raw_data/demo/demo_project.md.
+    chart: Mapped[str] = mapped_column(String, nullable=True)
     stack: Mapped[List[str]] = mapped_column(JSON, nullable=False)
     url: Mapped[str] = mapped_column(String, nullable=False)
     git_path: Mapped[str] = mapped_column(String, nullable=False)
