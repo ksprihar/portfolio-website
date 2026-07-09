@@ -8,3 +8,5 @@ resend
 python-frontmatter
 pyotp
 tzdata
+gunicorn
+psycopg2-binary
