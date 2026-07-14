@@ -49,6 +49,7 @@ PROJECT_ORDER = [
 ]
 
 BLOG_ORDER = [
+    "window-of-aggregate-sql",
     "pandas-groupby-energy-reports",
     "cleaning-energy-audit-exports",
     "blower-door-to-box-plots",

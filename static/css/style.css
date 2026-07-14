@@ -437,6 +437,11 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 
 .report-grid{display:grid; grid-template-columns:1fr; gap:48px;}
 .report-body{display:flex; flex-direction:column; gap:56px; min-width:0; container-type:inline-size;}
+/* Links authored inside project (why/how/results/code) and blog post body
+   content — themed to the accent color, underline only on hover so they
+   don't compete visually with the surrounding prose at rest. */
+.report-body a{color:var(--accent);}
+.report-body a:hover{text-decoration:underline;}
 .report-section h2{font-size:24px; margin-bottom:20px;}
 .report-section p{color:var(--sub); line-height:1.75; margin-bottom:16px;}
 .report-section p:last-child{margin-bottom:0;}
