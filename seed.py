@@ -36,24 +36,17 @@ import frontmatter
 PROJECTS_DIR = Path("raw_data/projects")
 BLOG_DIR = Path("raw_data/blogs")
 
-# Controls DB insert order, since folder.glob() has no guaranteed order of
+# Controls DB insert order, since folder.glob() has no guarantgit statuseed order of
 # its own. This order is what home()/projects() in main.py slice from (top 4
 # projects / top 3 posts on the home page) and what project_detail()'s
 # "other projects" sidebar picks from -- so it's not just cosmetic.
 PROJECT_ORDER = [
     "ontario-energy-mix",
-    "energy-audit-dashboard",
-    "hvac-efficiency-classifier",
-    "enerquery",
-    "sql-energy-queries",
 ]
 
 BLOG_ORDER = [
+    "the-problem-of-streaks-and-sessions",
     "window-of-aggregate-sql",
-    "pandas-groupby-energy-reports",
-    "cleaning-energy-audit-exports",
-    "blower-door-to-box-plots",
-    "first-sql-database-audit-records",
 ]
 
 

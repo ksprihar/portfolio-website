@@ -501,6 +501,21 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 .markdown-body pre code{font-family:var(--mono); font-size:12px; line-height:1.7; color:var(--ink); white-space:pre;}
 .markdown-body code{font-family:var(--mono); font-size:0.9em; color:var(--ink);}
 
+/* Markdown pipe tables (project sections + blog post body). display:block
+   + overflow-x lets a wide sample-data table scroll horizontally on
+   narrow screens instead of blowing out the layout, same overflow
+   treatment as the pre/code blocks above. */
+.report-body table{
+  width:100%; border-collapse:collapse; margin-bottom:16px;
+  display:block; overflow-x:auto; white-space:nowrap;
+}
+.report-body th,.report-body td{padding:10px 14px; text-align:left; border-bottom:1px solid var(--line);}
+.report-body th{
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--sub); font-weight:500;
+}
+.report-body td{color:var(--ink); font-size:14px;}
+
 .detail-sidebar{border:1px solid var(--line); background:var(--card); padding:20px; align-self:start;}
 .sidebar-label{font-family:var(--mono); font-size:12px; letter-spacing:.15em; text-transform:uppercase; color:var(--sub); margin-bottom:16px; display:block;}
 .stack-list{display:flex; flex-direction:column; gap:10px; margin-bottom:24px;}
