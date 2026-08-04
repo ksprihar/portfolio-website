@@ -26,7 +26,7 @@
 }
 
 *{box-sizing:border-box; margin:0; padding:0;}
-html{scroll-behavior:smooth;}
+html{scroll-behavior:smooth; scrollbar-width:thin; scrollbar-color:var(--line) transparent;}
 body{
   font-family:var(--sans);
   background:var(--bg);
@@ -242,6 +242,7 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 .about-header h1{font-size:36px; line-height:1.1; margin-bottom:4px;}
 .about-header .lead{color:var(--sub); font-size:16px; line-height:1.7; font-family:var(--mono); margin-bottom:20px;}
 .about-header .lead + .lead{font-family:var(--sans); margin-bottom:0;}
+.about-header .resume-btn{margin-top:24px;}
 .about-header + h2{font-size:24px; margin-bottom:40px;}
 .about-grid{display:grid; grid-template-columns:1fr; gap:48px;}
 .about-copy{color:var(--sub); line-height:1.75;}
@@ -265,7 +266,7 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
 .timeline-org{font-size:12px; color:var(--sub); margin-bottom:8px;}
 .timeline-detail{font-family:var(--mono); font-size:12px; color:var(--sub);}
 
-.skills-grid{margin-top:64px; display:grid; grid-template-columns:1fr; gap:24px;}
+.skills-grid{margin-top:32px; display:grid; grid-template-columns:1fr; gap:24px;}
 .skill-card{border:1px solid var(--line); background:var(--card); padding:24px;}
 .skill-cat{font-family:var(--mono); font-size:12px; letter-spacing:.15em; text-transform:uppercase; color:var(--accent); margin-bottom:16px; display:block;}
 .tags{display:flex; flex-wrap:wrap; gap:8px;}
@@ -274,7 +275,7 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
   background:var(--secondary); color:var(--sub); border:1px solid var(--line); border-radius:var(--radius);
 }
 
-.now-grid{margin-top:64px; display:grid; grid-template-columns:1fr; gap:24px;}
+.now-grid{margin-top:32px; display:grid; grid-template-columns:1fr; gap:24px;}
 .now-card{border:1px solid var(--line); background:var(--card); padding:24px;}
 .now-cat{font-family:var(--mono); font-size:12px; letter-spacing:.15em; text-transform:uppercase; color:var(--accent); margin-bottom:16px; display:block;}
 .now-list{display:flex; flex-direction:column; gap:10px;}
@@ -487,7 +488,7 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
   background:var(--secondary); border:1px solid var(--line); border-radius:var(--radius);
   padding:20px; overflow-x:auto;
 }
-.code-content pre code{font-family:var(--mono); font-size:12px; line-height:1.7; color:var(--ink); white-space:pre;}
+.code-content pre code{font-family:var(--mono); font-size:12px; line-height:1.7; color:var(--ink); white-space:pre; background:none; border:none; padding:0; border-radius:0;}
 
 .markdown-body h2{font-size:20px; margin:48px 0 16px; scroll-margin-top:calc(var(--header-h) + 20px);}
 .markdown-body h2:first-child{margin-top:0;}
@@ -498,8 +499,11 @@ h1, h2, h3{font-family:var(--serif); font-weight:600; color:var(--ink);}
   background:var(--secondary); border:1px solid var(--line); border-radius:var(--radius);
   padding:20px; overflow-x:auto; margin-bottom:16px;
 }
-.markdown-body pre code{font-family:var(--mono); font-size:12px; line-height:1.7; color:var(--ink); white-space:pre;}
-.markdown-body code{font-family:var(--mono); font-size:0.9em; color:var(--ink);}
+.markdown-body pre code{font-family:var(--mono); font-size:12px; line-height:1.7; color:var(--ink); white-space:pre; background:none; border:none; padding:0; border-radius:0;}
+.markdown-body code, .report-body code{
+  font-family:var(--mono); font-size:0.85em; color:var(--ink);
+  background:var(--secondary); padding:2px 6px; border:1px solid var(--line); border-radius:var(--radius);
+}
 
 /* Markdown pipe tables (project sections + blog post body). display:block
    + overflow-x lets a wide sample-data table scroll horizontally on

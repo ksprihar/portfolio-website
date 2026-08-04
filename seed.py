@@ -42,6 +42,7 @@ BLOG_DIR = Path("raw_data/blogs")
 # "other projects" sidebar picks from -- so it's not just cosmetic.
 PROJECT_ORDER = [
     "ontario-energy-mix",
+    "ontario-bps-energy-dashboard",
 ]
 
 BLOG_ORDER = [
@@ -128,7 +129,11 @@ def seed():
             git_call_entry = git_call[entry['slug']]
             key_to_add = git_call[entry['slug']].keys()
             for key in key_to_add:
-                entry[key] = git_call_entry[key]
+                # A special entry for the live demo page as it won't always be on Github
+                if key == 'live' and entry.get('live'):
+                    pass
+                else:
+                    entry[key] = git_call_entry[key]
 
             existing = db.session.get(Project, entry['slug'])
             if existing:

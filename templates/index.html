@@ -7,8 +7,10 @@
       <div>
         <span class="eyebrow">01 — Introduction</span>
         <h1>Energy meets<br><em>data.</em></h1>
-        <p class="lead">I'm a Mechanical and Aerospace Engineer who spent two years in automotive manufacturing at Tata Motors, then several years as a Registered Energy Advisor auditing homes across Canada. That field experience gave me a rare lens: I understand the measurements before I model them.</p>
-        <p class="lead">Currently building projects at the intersection of <span class="hl">energy efficiency</span> and <span class="hl">data analytics</span> — Python, SQL, and a lot of curiosity.</p>
+        <p class="lead">Mechanical engineer (B.Tech. - IIT Ropar) and aerospace engineer (M.Eng. - University of Toronto) who spent two years in
+        automotive manufacturing at Tata Motors, then several years as a Registered Energy Advisor auditing homes across Canada.
+        That field experience gave me a rare lens: I understand the measurements before I model them.</p>
+        <p class="lead">Currently building projects at the intersection of <span class="hl">energy efficiency</span> and <span class="hl">data analytics</span> — Python, SQL, Power BI, and a lot of curiosity.</p>
         <div class="cta-row">
           <a class="btn primary" href="{{ url_for('projects') }}">View Projects
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -27,7 +29,7 @@
         </div>
         <div class="hero-badge">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-          <div><p class="label">Visualisation</p><p class="sub">Plotly · Power BI</p></div>
+          <div><p class="label">Visualisation</p><p class="sub">Power BI · Excel</p></div>
         </div>
       </div>
     </div>
@@ -60,8 +62,12 @@
             {% if project.primary_language %}
             <span><span class="lang-dot" style="background:{{ project.languages[project.primary_language] }}"></span>{{ project.primary_language }}</span>
             {% endif %}
+            {% if project.stars > 0 %}
             <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> <span class="stat-num" data-slug="{{ project.slug }}" data-stat="stars">{{ project.stars }}</span></span>
+            {% endif %}
+            {% if project.forks > 0 %}
             <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.2"></circle><circle cx="18" cy="6" r="2.2"></circle><circle cx="12" cy="18" r="2.2"></circle><path d="M6 8.2V11a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V8.2"></path><line x1="12" y1="14" x2="12" y2="15.8"></line></svg> <span class="stat-num" data-slug="{{ project.slug }}" data-stat="forks">{{ project.forks }}</span></span>
+            {% endif %}
           </div>
         </a>
         {% endfor %}
@@ -105,7 +111,8 @@
       <div class="contact-grid">
         <div class="contact-copy">
           <h2 class="contact-heading" style="margin-bottom:20px;">Let's talk energy<br>and data.</h2>
-          <p>I am actively looking for Data Analyst and Energy Data Analyst opportunities. If you are working on energy efficiency, sustainability analytics, or building science data problems — I would love to hear from you.</p>
+          <p>I am actively looking for Data Analyst and Energy Data Analyst opportunities. If you are working on energy usage,
+          efficiency, emissions, utility, or grid data problems — I would love to hear from you.</p>
           <div class="contact-links">
             <a href="mailto:contact@ksprihar.com">
               <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>

@@ -540,4 +540,4 @@ def admin_message_delete(message_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)
