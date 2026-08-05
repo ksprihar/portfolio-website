@@ -62,7 +62,7 @@
 
         <section class="report-section">
           <span class="eyebrow">03 — Results</span>
-          <h2>Key findings</h2>
+          <h2>{{ project.results_heading or "Key findings" }}</h2>
           <div class="results-content">
             {{ project.results | markdown }}
           </div>

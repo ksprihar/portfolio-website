@@ -63,6 +63,11 @@ def load_project(path):
     project = frontmatter.load(path)
     project_dict = project.metadata
     project_dict['slug'] = Path(path).stem
+    if not project_dict.get('tags'):
+        file_name = Path(path).name
+        raise ValueError(f"The project file {file_name} is missing a required 'tags' list in its frontmatter.\n"
+                          f"Please check the demo_project.md file located in raw_data/demo directory "
+                          f"for the correct structure.")
     content = project.content
     content_list = re.split(r'(^## .+$)', content, flags=re.MULTILINE)
 

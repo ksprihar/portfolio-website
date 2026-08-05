@@ -105,6 +105,11 @@ class Project(db.Model):
     # one. Rendered with |safe (not |markdown) and wrapped in .chart-embed
     # by project-detail.html, not by the author — see raw_data/demo/demo_project.md.
     chart: Mapped[str] = mapped_column(String, nullable=True)
+    # Optional override for the Results section's <h2> (project-detail.html
+    # falls back to "Key findings" when this is unset) -- e.g. "Key highlights"
+    # for a project like a BI/PL-300 companion piece that isn't chasing a
+    # novel data finding. See raw_data/demo/demo_project.md.
+    results_heading: Mapped[str] = mapped_column(String, nullable=True)
     stack: Mapped[List[str]] = mapped_column(JSON, nullable=False)
     url: Mapped[str] = mapped_column(String, nullable=False)
     git_path: Mapped[str] = mapped_column(String, nullable=False)
@@ -169,7 +174,7 @@ _github_cache = {}
 
 def get_project_github_data(slug):
     """Fetches (or returns cached) GitHub repo + language stats for a project
-    slug. Returns a dict with url, git_path, live, tags, languages,
+    slug. Returns a dict with url, git_path, live, languages,
     primary_language, stars, forks."""
     now = time.time()
     cached = _github_cache.get(slug)
@@ -193,7 +198,6 @@ def get_project_github_data(slug):
             'description': '',
             'html_url': '',
             'homepage': '',
-            'topics': [],
             'stargazers_count': 0,
             'forks_count': 0,
         }
@@ -211,7 +215,6 @@ def get_project_github_data(slug):
         'url': data['html_url'],
         'git_path': data['html_url'].replace('https://', '').replace('http://', ''),
         'live': data['homepage'],
-        'tags': data['topics'],
         'languages': {language: get_lang_color(language) for language in lang_data.keys()},
         'primary_language': next(iter(lang_data.keys()), None),
         'stars': data['stargazers_count'],
