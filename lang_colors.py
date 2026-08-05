@@ -57,6 +57,15 @@ LANG_COLORS = {
     "Vim script": "#199f4b",
     "Markdown": "#083fa1",
     "TSQL": "#E38C00",
+    # Neither of these is officially colored by GitHub Linguist -- DAX and
+    # Power Query (M) both have long-open, unmerged requests for Linguist
+    # support (github-linguist/linguist discussion #5904 and issue #7856),
+    # and Power BI was never a candidate since Linguist only covers actual
+    # programming/markup/data languages, not applications. Power BI uses
+    # Microsoft's real brand yellow; DAX borrows Excel's brand green, since
+    # DAX's other major home (besides Power BI) is Excel Power Pivot.
+    "Power BI": "#F2C811",
+    "DAX": "#217346",
 }
 
 # Used for any language not in the map above, so the dot never breaks —

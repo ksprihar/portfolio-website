@@ -28,6 +28,7 @@ at seed time — see main.py.
 import re
 
 from main import app, db, Project, BlogPost, get_projects_github_data
+from lang_colors import get_lang_color
 
 from pathlib import Path
 import frontmatter
@@ -68,6 +69,16 @@ def load_project(path):
         raise ValueError(f"The project file {file_name} is missing a required 'tags' list in its frontmatter.\n"
                           f"Please check the demo_project.md file located in raw_data/demo directory "
                           f"for the correct structure.")
+    # 'languages' is an optional frontmatter override (see 'live' below) --
+    # most projects get this from GitHub automatically, but GitHub's
+    # linguist can't see inside a binary format like .pbix, so a project
+    # like a Power BI dashboard needs to specify it by hand. When present,
+    # convert the plain name list into the {name: color} shape the DB/
+    # templates already expect, and derive primary_language from the first
+    # (most important) entry.
+    if 'languages' in project_dict:
+        project_dict['languages'] = {lang: get_lang_color(lang) for lang in project_dict['languages']}
+        project_dict['primary_language'] = next(iter(project_dict['languages']))
     content = project.content
     content_list = re.split(r'(^## .+$)', content, flags=re.MULTILINE)
 
@@ -133,9 +144,13 @@ def seed():
             # Updating the entry with git_call
             git_call_entry = git_call[entry['slug']]
             key_to_add = git_call[entry['slug']].keys()
+            # These can be overridden by a project's own frontmatter instead of
+            # always trusting GitHub: 'live' won't always be on GitHub (e.g. a
+            # Power BI report), and 'languages'/'primary_language' can't be seen
+            # by GitHub's linguist inside a binary format like .pbix.
+            overridable_from_md = {'live', 'languages', 'primary_language'}
             for key in key_to_add:
-                # A special entry for the live demo page as it won't always be on Github
-                if key == 'live' and entry.get('live'):
+                if key in overridable_from_md and entry.get(key):
                     pass
                 else:
                     entry[key] = git_call_entry[key]
