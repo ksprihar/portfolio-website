@@ -11,7 +11,7 @@
     <div class="about-header">
       <div class="about-photo-wrap">
         <div class="about-photo">
-          <img src="https://images.unsplash.com/photo-1767175473698-859bc73e8e64?w=400&h=400&fit=crop&auto=format" alt="Karanvir Prihar">
+          <img src="{{ url_for('static', filename='assets/karanvir_photo.jpg') }}" alt="A photo of Karanvir Singh Prihar">
         </div>
       </div>
       <div>
@@ -19,7 +19,7 @@
         <h1>Karanvir Singh Prihar</h1>
         <p class="lead">Energy Data Analyst</p>
         <p class="lead">Mechanical engineer (B.Tech. - IIT Ropar) and aerospace engineer (M.Eng. - University of Toronto) turned Registered
-        Energy Advisor, now transitioning into data analytics. Two years in automotive manufacturing, several years auditing
+        Energy Advisor, now transitioning into data analytics. Two years in automotive manufacturing, three years auditing
         homes across Canada, and a growing conviction that the energy sector needs better data thinking.</p>
         <a class="btn ghost resume-btn" href="{{ url_for('static', filename='assets/Karanvir_Prihar_Resume.pdf') }}" download>
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
@@ -36,7 +36,7 @@
         <p>I completed a master's in aerospace engineering at the University of Toronto in 2020 — right as COVID hit and the
         engineering job market went quiet. I took on whatever work I could find, from truck mechanic to Uber deliveries, while I
         figured out my next move. A friend working as a Registered Energy Advisor introduced me to the field, and I was hooked.</p>
-        <p>I got certified and spent the next several years walking through hundreds of homes across Canada with a blower door, a
+        <p>I got certified and spent the next three years walking through hundreds of homes across Canada with a blower door, a
         thermal camera, and a methodology built on decades of building science research. Every audit fed into a report and an
         energy model: air leakage measurements, heat loss coefficients, equipment efficiency ratings, estimated savings by
         upgrade path. I was doing data work long before I called it that.</p>
